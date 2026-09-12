@@ -1,4 +1,4 @@
-package h3rnan11.smartbooking.Local;
+package h3rnan11.smartbooking.Utils;
 
 public enum Category {
 
