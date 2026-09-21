@@ -5,7 +5,7 @@ INSERT IGNORE INTO users (id, name, last_name, email, password, role, id_local) 
     (10, 'Carlos', 'Ramirez', 'carlos.owner@smartbooking.com', '$2a$10$fZp7jLgqTZ635JiRlPuvgOmynWh9LJK.hUxZFBYUnQ.KVFoc7HTx6', 'OWNER', NULL);
 
 INSERT IGNORE INTO local (id, name, location, id_owner, category) VALUES
-    (1, 'Bella Hair Studio', 'Av. Principal 123, Springfield', 1, 'HAIR_DRESSER');
+    (1, 'Bella Hair Studio', 'Av. Principal 123, Springfield', 10, 'HAIR_DRESSER');
 
 INSERT IGNORE INTO users (id, name, last_name, email, password, role, id_local) VALUES
     (3, 'Lucia', 'Fernandez', 'lucia.employee@smartbooking.com', '$2a$10$fZp7jLgqTZ635JiRlPuvgOmynWh9LJK.hUxZFBYUnQ.KVFoc7HTx6', 'EMPLOYEE', 1),
@@ -13,8 +13,12 @@ INSERT IGNORE INTO users (id, name, last_name, email, password, role, id_local) 
     (5, 'Ana', 'Torres', 'ana.client@smartbooking.com', '$2a$10$fZp7jLgqTZ635JiRlPuvgOmynWh9LJK.hUxZFBYUnQ.KVFoc7HTx6', 'CLIENT', NULL),
     (6, 'Pedro', 'Lopez', 'pedro.client@smartbooking.com', '$2a$10$fZp7jLgqTZ635JiRlPuvgOmynWh9LJK.hUxZFBYUnQ.KVFoc7HTx6', 'CLIENT', NULL);
 
--- status has no @Enumerated on the entity, so JPA persists it as the enum ordinal:
--- 0=PENDING, 1=CONFIRMED, 2=CANCELLED, 3=COMPLETED
+
 INSERT IGNORE INTO appointments (id, date, start_time, end_time, status, id_client, id_employee) VALUES
-    (1, '2026-09-20', '10:00:00', '10:30:00', 1, 4, 3),
-    (2, '2026-09-21', '15:00:00', '15:45:00', 0, 5, 4);
+    (1, '2026-09-20', '10:00:00', '10:30:00', 'COMPLETED', 6, 3),
+    (2, '2026-09-21', '15:00:00', '15:45:00', 'COMPLETED', 6, 4),
+    (3, '2026-09-22', '09:30:00', '10:00:00', 'CONFIRMED', 5, 3),
+    (4, '2026-09-23', '11:00:00', '11:30:00', 'PENDING', 6, 4),
+    (5, '2026-09-24', '16:00:00', '16:45:00', 'CONFIRMED', 5, 4),
+    (6, '2026-09-26', '12:00:00', '12:30:00', 'PENDING', 6, 3),
+    (7, '2026-09-18', '09:00:00', '09:30:00', 'CANCELLED', 5, 3);

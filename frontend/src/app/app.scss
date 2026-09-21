@@ -1,0 +1,12 @@
+  :host{
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #E6D5BE;
+  }
+  .page-content{
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    overflow-y: auto;
+  }

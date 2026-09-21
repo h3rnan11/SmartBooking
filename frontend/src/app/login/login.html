@@ -1,0 +1,49 @@
+<div class="auth-card">
+  @if (mode() === 'login') {
+    <h1>Iniciar sesión</h1>
+    <form [formGroup]="loginForm" (ngSubmit)="submitLogin()">
+      <label>
+        Email
+        <input type="email" formControlName="email" />
+      </label>
+      <label>
+        Contraseña
+        <input type="password" formControlName="password" />
+      </label>
+      <button type="submit" [disabled]="loginForm.invalid || loading()">Entrar</button>
+    </form>
+    <p>
+      ¿No tienes cuenta?
+      <a (click)="toggleMode()">Regístrate aquí</a>
+    </p>
+  } @else {
+    <h1>Crear cuenta</h1>
+    <form [formGroup]="registerForm" (ngSubmit)="submitRegister()">
+      <label>
+        Nombre
+        <input type="text" formControlName="name" />
+      </label>
+      <label>
+        Apellido
+        <input type="text" formControlName="lastName" />
+      </label>
+      <label>
+        Email
+        <input type="email" formControlName="email" />
+      </label>
+      <label>
+        Contraseña
+        <input type="password" formControlName="password" />
+      </label>
+      <button type="submit" [disabled]="registerForm.invalid || loading()">Registrarme</button>
+    </form>
+    <p>
+      ¿Ya tienes cuenta?
+      <a (click)="toggleMode()">Inicia sesión aquí</a>
+    </p>
+  }
+
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+</div>

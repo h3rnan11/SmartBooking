@@ -1,7 +1,6 @@
 package h3rnan11.smartbooking.Appointment;
 
 import h3rnan11.smartbooking.User.User;
-import h3rnan11.smartbooking.Utils.Status;
 import jakarta.persistence.*;
 
 import java.sql.Time;
@@ -17,6 +16,8 @@ public class Appointment {
     private Date date;
     private Time start_time;
     private Time end_time;
+
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     @ManyToOne
