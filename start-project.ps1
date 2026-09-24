@@ -10,7 +10,9 @@
 # en ese caso, al realizar -d --build, se volverán a levantar los contenedores
 # y se aplicarán los cambios
 
-# 3. Levanta los contenedores usando docker compose, si ya están levantados,
+# 3. Si no existe el archivo .env, lo crea con un secreto JWT aleatorio
+
+# 4. Levanta los contenedores usando docker compose, si ya están levantados,
 # los reconstruye para asegurarse de que se apliquen los cambios
 
 Set-Location $PSScriptRoot
@@ -49,6 +51,16 @@ foreach ($port in $ports) {
         Write-Host "Puerto $port ocupado. Intenta cerrarlo antes." -ForegroundColor Red
         # No salimos, solo avisamos por si es un contenedor viejo
     }
+}
+
+# Si no existe .env, lo creamos con un secreto JWT aleatorio de 32 bytes en Base64.
+# docker compose lee este archivo automáticamente y el backend no arranca sin el secreto
+if (-not (Test-Path ".env")) {
+    $bytes = New-Object byte[] 32
+    [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+    $secret = [Convert]::ToBase64String($bytes)
+    Set-Content -Path ".env" -Value "SMARTBOOKING_JWT_SECRET=$secret" -Encoding ascii
+    Write-Host "Creado .env con un secreto JWT nuevo." -ForegroundColor Green
 }
 
 # Levantamos los contenedores, si ya están levantados, los reconstruimos para asegurarnos de
