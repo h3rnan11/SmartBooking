@@ -5,3 +5,4 @@ target
 frontend
 HELP.md
 README.md
+.env
