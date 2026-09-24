@@ -33,10 +33,10 @@ public class User {
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
     private List<EmployeeSchedule> schedules = new ArrayList<>();
 
-    @OneToMany(mappedBy = "idClient", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
     private List<Appointment> clientAppointments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "idEmployee", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
     private List<Appointment> employeeAppointments = new ArrayList<>();
 
 
