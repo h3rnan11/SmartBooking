@@ -10,7 +10,7 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
-import java.sql.Time;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -60,25 +60,25 @@ class AppointmentServicePersistenceTest {
         Appointment appointment = new Appointment();
         appointment.setStatus(Status.CONFIRMED);
         appointment.setService(service);
-        appointment.setStartTime(Time.valueOf("10:00:00"));
+        appointment.setStartTime(LocalTime.parse("10:00:00"));
         appointmentRepository.saveAndFlush(appointment);
         em.clear();
 
         Appointment reloaded = appointmentRepository.findById(appointment.getId()).orElseThrow();
-        assertEquals(Time.valueOf("10:30:00"), reloaded.getEndTime());
+        assertEquals(LocalTime.parse("10:30:00"), reloaded.getEndTime());
         assertEquals(service.getId(), reloaded.getService().getId());
     }
 
     @Test
     void appointmentsWithoutServiceStillPersist() {
         Appointment appointment = new Appointment();
-        appointment.setStartTime(Time.valueOf("09:00:00"));
-        appointment.setEndTime(Time.valueOf("09:30:00"));
+        appointment.setStartTime(LocalTime.parse("09:00:00"));
+        appointment.setEndTime(LocalTime.parse("09:30:00"));
         appointmentRepository.saveAndFlush(appointment);
         em.clear();
 
         Appointment reloaded = appointmentRepository.findById(appointment.getId()).orElseThrow();
         assertNull(reloaded.getService());
-        assertEquals(Time.valueOf("09:30:00"), reloaded.getEndTime());
+        assertEquals(LocalTime.parse("09:30:00"), reloaded.getEndTime());
     }
 }

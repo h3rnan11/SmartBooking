@@ -4,8 +4,8 @@ import h3rnan11.smartbooking.Service.Service;
 import h3rnan11.smartbooking.User.User;
 import jakarta.persistence.*;
 
-import java.sql.Time;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "appointments")
@@ -14,67 +14,70 @@ public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private Date date;
-    private Time start_time;
-    private Time end_time;
+    private LocalDate date;
+    private LocalTime startTime;
+    private LocalTime endTime;
 
     @Enumerated(EnumType.STRING)
     private Status status;
 
     @ManyToOne
     @JoinColumn(name = "id_client")
-    private User idClient;
+    private User client;
 
     @ManyToOne
     @JoinColumn(name = "id_employee")
-    private User idEmployee;
+    private User employee;
 
     // Nullable so existing rows keep working after ddl-auto adds the column.
     @ManyToOne
     @JoinColumn(name = "id_service")
     private Service service;
 
-
     /**
-     * When a service is set, end_time is always start_time + service duration.
-     * Appointments without a service (legacy rows) keep their stored end_time.
+     * When a service is set, endTime is always startTime + service duration.
+     * Appointments without a service (legacy rows) keep their stored endTime.
      */
     @PrePersist
     @PreUpdate
     void deriveEndTime() {
-        if (service == null || start_time == null || service.getDurationMinutes() == null) {
+        if (service == null || startTime == null || service.getDurationMinutes() == null) {
             return;
         }
-        end_time = Time.valueOf(start_time.toLocalTime().plusMinutes(service.getDurationMinutes()));
+        endTime = startTime.plusMinutes(service.getDurationMinutes());
     }
 
     public Integer getId() {
         return id;
     }
 
-    public Date getDate() {
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 
-    public Time getStartTime() {
-        return start_time;
+    public LocalTime getStartTime() {
+        return startTime;
     }
 
-    public void setStartTime(Time startTime) {
-        this.start_time = startTime;
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
         deriveEndTime();
     }
 
-    public Time getEndTime() {
-        return end_time;
+    public LocalTime getEndTime() {
+        return endTime;
     }
 
-    public void setEndTime(Time endTime) {
-        this.end_time = endTime;
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
     }
 
     public Status getStatus() {
@@ -85,20 +88,20 @@ public class Appointment {
         this.status = status;
     }
 
-    public User getIdClient() {
-        return idClient;
+    public User getClient() {
+        return client;
     }
 
-    public void setIdClient(User idClient) {
-        this.idClient = idClient;
+    public void setClient(User client) {
+        this.client = client;
     }
 
-    public User getIdEmployee() {
-        return idEmployee;
+    public User getEmployee() {
+        return employee;
     }
 
-    public void setIdEmployee(User idEmployee) {
-        this.idEmployee = idEmployee;
+    public void setEmployee(User employee) {
+        this.employee = employee;
     }
 
     public Service getService() {
