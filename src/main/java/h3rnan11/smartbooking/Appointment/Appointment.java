@@ -1,5 +1,6 @@
 package h3rnan11.smartbooking.Appointment;
 
+import h3rnan11.smartbooking.Service.Service;
 import h3rnan11.smartbooking.User.User;
 import jakarta.persistence.*;
 
@@ -28,6 +29,23 @@ public class Appointment {
     @JoinColumn(name = "id_employee")
     private User employee;
 
+    // Nullable so existing rows keep working after ddl-auto adds the column.
+    @ManyToOne
+    @JoinColumn(name = "id_service")
+    private Service service;
+
+    /**
+     * When a service is set, endTime is always startTime + service duration.
+     * Appointments without a service (legacy rows) keep their stored endTime.
+     */
+    @PrePersist
+    @PreUpdate
+    void deriveEndTime() {
+        if (service == null || startTime == null || service.getDurationMinutes() == null) {
+            return;
+        }
+        endTime = startTime.plusMinutes(service.getDurationMinutes());
+    }
 
     public Integer getId() {
         return id;
@@ -51,6 +69,7 @@ public class Appointment {
 
     public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
+        deriveEndTime();
     }
 
     public LocalTime getEndTime() {
@@ -83,5 +102,14 @@ public class Appointment {
 
     public void setEmployee(User employee) {
         this.employee = employee;
+    }
+
+    public Service getService() {
+        return service;
+    }
+
+    public void setService(Service service) {
+        this.service = service;
+        deriveEndTime();
     }
 }

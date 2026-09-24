@@ -22,6 +22,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/smartbooking?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: Root
+      SMARTBOOKING_JWT_SECRET: ${SMARTBOOKING_JWT_SECRET:?Define SMARTBOOKING_JWT_SECRET en el archivo .env (ver .env.example)}
     depends_on:
       mysql:
         condition: service_healthy

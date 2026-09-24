@@ -2,14 +2,29 @@
 
 ## Markdown
 1. [Description](#Description)
-2. [Entities](#Entities)
-3. [Other Classes](#other-classes)
+2. [Configuration](#configuration)
+3. [Entities](#Entities)
+4. [Other Classes](#other-classes)
 
 
 ## Description
 SmartBooking is a software developed to simplify the task of making an appointment without any call. 
 It gives the client the possibility of create, modify or cancel any appointment with a few clicks.
 <!-- TODO finish the description -->
+
+## Configuration
+The secret used to sign JWT tokens is not stored in the repository. It is read from the `SMARTBOOKING_JWT_SECRET` environment variable, and the backend won't start without it.
+
+- **Docker Compose:** copy [.env.example](.env.example) to `.env` and fill in `SMARTBOOKING_JWT_SECRET`. `docker compose` reads `.env` automatically and passes the value to the backend. [start-project.ps1](start-project.ps1) creates `.env` with a random secret if it doesn't exist.
+- **Running locally (IDE / `mvnw spring-boot:run`):** set `SMARTBOOKING_JWT_SECRET` in your shell or in the run configuration.
+
+The secret must be at least 32 characters (256 bits for HS256). Generate one with:
+
+```bash
+openssl rand -base64 32
+```
+
+`.env` is git-ignored; never commit it. Changing the secret invalidates every token issued before.
 
 ## Entities
 1. [User](#user)
