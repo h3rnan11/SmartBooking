@@ -35,4 +35,32 @@ export class Auth {
   register(request: RegisterRequest): Observable<string> {
     return this.http.post(`${API_URL}/newUser`, request, { responseType: 'text' });
   }
+
+  isAuthenticated(): boolean {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return false;
+    }
+    if (isExpired(token)) {
+      this.logout();
+      return false;
+    }
+    return true;
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+  }
+}
+
+// Reads the JWT "exp" claim; a token that can't be decoded counts as expired.
+function isExpired(token: string): boolean {
+  try {
+    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const { exp } = JSON.parse(atob(payload));
+    return typeof exp !== 'number' || exp * 1000 <= Date.now();
+  } catch {
+    return true;
+  }
 }

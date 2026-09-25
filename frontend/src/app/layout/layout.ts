@@ -1,5 +1,7 @@
-import { Component, signal } from '@angular/core';
-import {RouterOutlet} from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+
+import { Auth } from '../services/auth';
 
 @Component({
   selector: 'app-layout',
@@ -8,6 +10,8 @@ import {RouterOutlet} from '@angular/router';
   styleUrl: './layout.scss',
 })
 export class Layout {
+  private readonly auth = inject(Auth);
+  private readonly router = inject(Router);
 
   activeItem = signal<string>('profile');
   isHamburgerOpen = signal<boolean>(false);
@@ -18,6 +22,11 @@ export class Layout {
 
   toggleHamburger(): void {
     this.isHamburgerOpen.update(open => !open);
+  }
+
+  logout(): void {
+    this.auth.logout();
+    this.router.navigateByUrl('/login');
   }
 
 }
