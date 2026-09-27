@@ -1,1 +1,10 @@
-<p>appointment-card works!</p>
+<article class="appointment-card">
+  <div class="appointment-when">
+    <span class="appointment-date">{{ appointment().date }}</span>
+    <span class="appointment-time">{{ appointment().start_time }}</span>
+  </div>
+  <div class="appointment-where">
+    <span class="appointment-local">{{ appointment().local_name }}</span>
+    <span class="appointment-location">{{ appointment().local_location }}</span>
+  </div>
+</article>

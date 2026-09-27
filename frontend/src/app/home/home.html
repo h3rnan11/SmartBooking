@@ -1,1 +1,15 @@
-<p>home works!</p>
+<h1>Tus próximas citas</h1>
+
+@if (loading()) {
+  <p>Cargando...</p>
+} @else if (errorMessage()) {
+  <p class="error">{{ errorMessage() }}</p>
+} @else if (appointments().length === 0) {
+  <p>No tienes citas próximas.</p>
+} @else {
+  <div class="appointment-list">
+    @for (appointment of appointments(); track appointment.id) {
+      <app-appointment-card [appointment]="appointment" />
+    }
+  </div>
+}

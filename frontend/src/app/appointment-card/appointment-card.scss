@@ -1,0 +1,35 @@
+:host {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 10px;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.appointment-when,
+.appointment-where {
+  display: flex;
+  flex-direction: column;
+}
+
+.appointment-where {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.appointment-date {
+  font-weight: 600;
+}
+
+.appointment-time,
+.appointment-location {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.appointment-local {
+  font-weight: 600;
+}

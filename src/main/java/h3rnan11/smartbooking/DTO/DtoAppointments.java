@@ -1,35 +1,43 @@
 package h3rnan11.smartbooking.DTO;
 
-import java.sql.Time;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class DtoAppointments {
 
-    private Date date;
-    private Time start_time;
+    private Integer id;
+    private LocalDate date;
+    private LocalTime start_time;
     private String local_name;
     private String local_location;
 
-    public DtoAppointments(Date date, Time start_time, String local_name, String local_location) {
+    public DtoAppointments(Integer id, LocalDate date, LocalTime start_time, String local_name, String local_location) {
+        this.id = id;
         this.date = date;
         this.start_time = start_time;
         this.local_name = local_name;
         this.local_location = local_location;
     }
 
-    public Date getDate() {
-        return date;
+    public Integer getId() {
+        return id;
     }
 
-    public void setDate(Date date) {
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public LocalDate getDate() { return date; }
+
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 
-    public Time getStart_time() {
+    public LocalTime getStart_time() {
         return start_time;
     }
 
-    public void setStart_time(Time start_time) {
+    public void setStart_time(LocalTime start_time) {
         this.start_time = start_time;
     }
 

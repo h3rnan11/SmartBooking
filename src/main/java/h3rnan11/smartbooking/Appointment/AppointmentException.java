@@ -26,4 +26,8 @@ public class AppointmentException extends RuntimeException {
     public static AppointmentException conflict(String message) {
         return new AppointmentException(HttpStatus.CONFLICT, message);
     }
+
+    public static AppointmentException forbidden(String message) {
+        return new AppointmentException(HttpStatus.FORBIDDEN, message);
+    }
 }
