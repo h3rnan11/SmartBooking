@@ -7,6 +7,6 @@ public record DtoAppointments(
         Integer id,
         LocalDate date,
         LocalTime startTime,
-        String Name,
-        String Location
+        String name,
+        String location
 ) {}

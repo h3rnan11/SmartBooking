@@ -2,14 +2,16 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-const API_URL = 'http://localhost:8080/smartBooking/smart-booking/appointments';
+import { environment } from '../../environments/environment';
+
+const API_URL = `${environment.apiUrl}/appointments`;
 
 export interface Appointment {
   id: number;
   date: string;
   startTime: string;
-  Name: string;
-  Location: string;
+  name: string;
+  location: string;
 }
 
 @Injectable({
