@@ -11,6 +11,9 @@ import java.util.List;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Integer> {
 
+
+    Appointment getAppointmentById(Integer id);
+
     @Query("""
     select new h3rnan11.smartbooking.DTO.DtoAppointments(a.id, a.date, a.startTime, l.name, l.location)
     from Appointment a

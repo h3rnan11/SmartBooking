@@ -2,12 +2,11 @@ package h3rnan11.smartbooking.Appointment;
 
 import h3rnan11.smartbooking.DTO.DtoAppointments;
 import h3rnan11.smartbooking.Role.Role;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -33,8 +32,19 @@ public class AppointmentController {
         return appointmentService.getAppointments(email, role);
     }
 
-    @ExceptionHandler(AppointmentException.class)
-    public ResponseEntity<Map<String, String>> handleAppointmentException(AppointmentException e) {
-        return ResponseEntity.status(e.getStatus()).body(Map.of("error", e.getMessage()));
+    @PatchMapping("{id}/canceled")
+    public ResponseEntity<?> cancelAppointment(Authentication authentication, @PathVariable("id") Integer id){
+        String email = authentication.getName();
+        appointmentService.cancelAppointment(email, id);
+        return ResponseEntity.ok("Appointment with id:"+id+", cancelled correctly");
     }
+
+    @PatchMapping("{id}/updated")
+    public ResponseEntity<?> updateAppointment(Authentication authentication, @PathVariable("id") Integer id){
+        String email = authentication.getName();
+        appointmentService.updateAppointment(email, id);
+        return ResponseEntity.ok("Appointment with id:"+id+", updated correctly");
+    }
+
+
 }
