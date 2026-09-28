@@ -15,13 +15,13 @@ INSERT IGNORE INTO users (id, name, last_name, email, password, role, id_local) 
 
 
 INSERT IGNORE INTO appointments (id, date, start_time, end_time, status, id_client, id_employee) VALUES
-    (1, '2026-09-20', '10:00:00', '10:30:00', 'COMPLETED', 6, 3),
+    (1, '2026-11-20', '10:00:00', '10:30:00', 'COMPLETED', 6, 3),
     (2, '2026-09-21', '15:00:00', '15:45:00', 'COMPLETED', 6, 4),
-    (3, '2026-09-22', '09:30:00', '10:00:00', 'CONFIRMED', 5, 3),
+    (3, '2026-11-22', '09:30:00', '10:00:00', 'CONFIRMED', 5, 3),
     (4, '2026-09-23', '11:00:00', '11:30:00', 'PENDING', 6, 4),
     (5, '2026-09-24', '16:00:00', '16:45:00', 'CONFIRMED', 5, 4),
-    (6, '2026-09-26', '12:00:00', '12:30:00', 'PENDING', 6, 3),
-    (7, '2026-09-18', '09:00:00', '09:30:00', 'CANCELLED', 5, 3);
+    (6, '2026-11-26', '12:00:00', '12:30:00', 'PENDING', 6, 3),
+    (7, '2026-11-18', '09:00:00', '09:30:00', 'CANCELLED', 5, 3);
 
 
 INSERT IGNORE INTO services (id, name, duration_minutes, price, id_local) VALUES

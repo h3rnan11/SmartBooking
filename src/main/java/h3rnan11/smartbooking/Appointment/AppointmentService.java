@@ -8,6 +8,8 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class AppointmentService {
@@ -31,5 +33,26 @@ public class AppointmentService {
             case Role.EMPLOYEE -> appointmentRepository.getAppointmentsFromEmployee(email, today, now);
             case Role.ADMIN -> throw AppointmentException.forbidden("Admins do not have appointments");
         };
+    }
+
+    public void cancelAppointment (String email, Integer id){
+        Appointment apt = appointmentRepository.getAppointmentById(id);
+        if(Objects.equals(apt.getEmployee().getEmail(), email)
+                || Objects.equals(apt.getClient().getEmail(), email)){
+            apt.setStatus(Status.CANCELLED);
+            appointmentRepository.save(apt);
+        }
+        throw AppointmentException.forbidden("User not allow");
+    }
+
+    public void updateAppointment (String email, Integer id){
+        Appointment apt = appointmentRepository.getAppointmentById(id);
+        if(Objects.equals(apt.getEmployee().getEmail(), email)
+                || Objects.equals(apt.getClient().getEmail(), email)){
+            apt.setStatus(Status.CANCELLED);
+            appointmentRepository.save(apt);
+        }else{
+            throw AppointmentException.forbidden("User not allow");
+        }
     }
 }
