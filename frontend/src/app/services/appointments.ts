@@ -7,9 +7,9 @@ const API_URL = 'http://localhost:8080/smartBooking/smart-booking/appointments';
 export interface Appointment {
   id: number;
   date: string;
-  start_time: string;
-  local_name: string;
-  local_location: string;
+  startTime: string;
+  Name: string;
+  Location: string;
 }
 
 @Injectable({

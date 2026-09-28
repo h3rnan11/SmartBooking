@@ -11,8 +11,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/smart-booking")
 public class SmartBookingController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public SmartBookingController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping("/newUser")
     public ResponseEntity<String> newUser(@RequestBody DtoNewUser dtoNewUser){

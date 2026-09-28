@@ -16,7 +16,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     from Appointment a
     join a.employee.local l
     where a.client.email = :email
-      and (a.date > :today or (a.date = :today and a.startTime >= :now))
+        and a.status <> h3rnan11.smartbooking.Appointment.Status.CANCELLED
+        and (a.date > :today or (a.date = :today and a.startTime >= :now))
     order by a.date asc, a.startTime asc
 """)
     List<DtoAppointments> getAppointmentsFromClient(@Param("email") String email,
@@ -29,7 +30,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     from Appointment a
     join a.employee.local l
     where a.employee.email = :email
-      and (a.date > :today or (a.date = :today and a.startTime >= :now))
+        and a.status <> h3rnan11.smartbooking.Appointment.Status.CANCELLED
+        and (a.date > :today or (a.date = :today and a.startTime >= :now))
     order by a.date asc, a.startTime asc
 """)
     List<DtoAppointments> getAppointmentsFromEmployee(@Param("email") String email,
@@ -42,7 +44,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     from Appointment a
     join a.employee.local l
     where l.owner.email = :email
-      and (a.date > :today or (a.date = :today and a.startTime >= :now))
+        and a.status <> h3rnan11.smartbooking.Appointment.Status.CANCELLED
+        and (a.date > :today or (a.date = :today and a.startTime >= :now))
     order by a.date asc, a.startTime asc
 """)
     List<DtoAppointments> getAppointmentsFromOwner(@Param("email") String email,
