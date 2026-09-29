@@ -3,12 +3,10 @@ package h3rnan11.smartbooking.DTO;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public record DtoAppointments(
+public record DtoUpdateAppointment(
         Integer id,
         Integer employeeId,
-        Integer clientId,
         LocalDate date,
-        LocalTime startTime,
-        String name,
-        String location
-) {}
+        LocalTime startTime
+) {
+}
