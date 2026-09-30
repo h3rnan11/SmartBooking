@@ -1,18 +1,13 @@
 package h3rnan11.smartbooking.Appointment;
 
 import h3rnan11.smartbooking.DTO.DtoAppointments;
-import h3rnan11.smartbooking.DTO.DtoEmployeeResponse;
 import h3rnan11.smartbooking.DTO.DtoUpdateAppointment;
 import h3rnan11.smartbooking.Role.Role;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/smart-booking/appointments")
@@ -42,7 +37,7 @@ public class AppointmentController {
         return ResponseEntity.ok("Cancelled appointment with id ["+id+"]");
     }
 
-    @PutMapping("{id}/update")
+    @PutMapping("{id}")
     public ResponseEntity<?> updateAppointment(Authentication authentication,
                                                @PathVariable("id") Integer id,
                                                @RequestBody DtoUpdateAppointment appointment){
@@ -51,8 +46,5 @@ public class AppointmentController {
         return ResponseEntity.ok("Appointment with id:"+id+", updated correctly");
     }
 
-    @GetMapping("/locals/{id}/employees")
-    public ResponseEntity<List<DtoEmployeeResponse>> getAllEmployeesFromLocal(@PathVariable("id") Integer id){
-        return ResponseEntity.of(Optional.ofNullable(appointmentService.getAllEmployeesFromLocal(id)));
-    }
+
 }

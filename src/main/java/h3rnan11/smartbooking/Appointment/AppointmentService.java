@@ -6,8 +6,9 @@ import h3rnan11.smartbooking.DTO.DtoUpdateAppointment;
 import h3rnan11.smartbooking.Role.Role;
 import h3rnan11.smartbooking.User.User;
 import h3rnan11.smartbooking.User.UserRepository;
-import jakarta.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -15,7 +16,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class AppointmentService {
@@ -59,6 +59,7 @@ public class AppointmentService {
                 || Objects.equals(apt.getClient().getEmail(), email)){
             apt.setStatus(Status.CANCELLED);
             appointmentRepository.save(apt);
+            return;
         }
         throw AppointmentException.forbidden("User not allow");
     }
@@ -67,24 +68,35 @@ public class AppointmentService {
     public void updateAppointment (String email, DtoUpdateAppointment appointment, Integer id) {
         Appointment apt = appointmentRepository.findById(id)
                 .orElseThrow(() -> AppointmentException.notFound("No appointment found with id " + id));
-        User employee = userRepository.findById(appointment.employeeId())
-                .orElseThrow(() -> AppointmentException.notFound("No employee found with id " + appointment.employeeId()));
+
+        //If employeeId is null we left the previous employee
+        User employee = (appointment.employeeId() == null)
+                ? apt.getEmployee()
+                : userRepository.findById(appointment.employeeId())
+                .orElseThrow(() -> AppointmentException.notFound(
+                        "No employee found with id " + appointment.employeeId()));
+
+        if(!employee.getRole().equals(Role.EMPLOYEE) || !employee.getLocal().equals(apt.getEmployee().getLocal())){
+            throw AppointmentException.badRequest("employeeId does not match with an employee from the local selected");
+        }
 
         // USER confirmation
         if (!Objects.equals(apt.getClient().getEmail(), email) && !Objects.equals(apt.getEmployee().getEmail(), email)) {
             throw AppointmentException.forbidden("User not allow to update foreign appointments");
         }
+
+
         // STATUS confirmation
         if (apt.getStatus() == Status.CANCELLED || apt.getStatus() == Status.COMPLETED) {
-            throw AppointmentException.forbidden("You cant update an appointment that is CANCELED or COMPLETED");
+            throw AppointmentException.badRequest("You cant update an appointment that is CANCELED or COMPLETED");
         }
 
         // DATE confirmation
         if (appointment.date() == null || appointment.startTime() == null) {
             throw AppointmentException.badRequest("Appointment date/startTime cant be null");
         }
-        LocalDateTime asd = LocalDateTime.of(appointment.date(), appointment.startTime());
-        if(asd.isBefore(LocalDateTime.now(clock))){
+        LocalDateTime newDateTime = LocalDateTime.of(appointment.date(), appointment.startTime());
+        if(newDateTime.isBefore(LocalDateTime.now(clock))){
             throw AppointmentException.badRequest("You cannot reserve on a previous date or time");
         }
         apt.setEmployee(employee);
