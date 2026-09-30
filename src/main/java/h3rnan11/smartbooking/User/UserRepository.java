@@ -15,10 +15,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     User findUserByEmail(String email);
 
     @Query("""
-        select new h3rnan11.smartbooking.DTO.DtoEmployeeResponse.java(u.id, u.name, u.lastName)
+        select new h3rnan11.smartbooking.DTO.DtoEmployeeResponse(u.id, u.name, u.lastName)
         from User u
         join u.local l
-            where l.id = :idLocal
+            where u.local.id = :idLocal and u.role = h3rnan11.smartbooking.Role.Role.EMPLOYEE
         """)
     List<DtoEmployeeResponse> getAllEmployeesFromLocal(@Param("idLocal") Integer idLocal);
 }

@@ -15,7 +15,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     Appointment getAppointmentById(Integer id);
 
     @Query("""
-    select new h3rnan11.smartbooking.DTO.DtoAppointments(a.id, a.client.id, a.employee.id, a.date, a.startTime, l.name, l.location)
+    select new h3rnan11.smartbooking.DTO.DtoAppointments(a.id, a.employee.id, a.client.id, a.date, a.startTime, l.name, l.location)
     from Appointment a
     join a.employee.local l
     where a.client.email = :email
@@ -29,7 +29,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
 
 
     @Query("""
-    select new h3rnan11.smartbooking.DTO.DtoAppointments(a.id, a.client.id, a.employee.id, a.date, a.startTime, l.name, l.location)
+    select new h3rnan11.smartbooking.DTO.DtoAppointments(a.id, a.employee.id, a.client.id, a.date, a.startTime, l.name, l.location)
     from Appointment a
     join a.employee.local l
     where a.employee.email = :email
@@ -43,7 +43,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
 
 
     @Query("""
-    select new h3rnan11.smartbooking.DTO.DtoAppointments(a.id, a.client.id, a.employee.id, a.date, a.startTime, l.name, l.location)
+    select new h3rnan11.smartbooking.DTO.DtoAppointments(a.id, a.employee.id, a.client.id, a.date, a.startTime, l.name, l.location)
     from Appointment a
     join a.employee.local l
     where l.owner.email = :email
@@ -54,5 +54,21 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     List<DtoAppointments> getAppointmentsFromOwner(@Param("email") String email,
                                                     @Param("today") LocalDate today,
                                                     @Param("now") LocalTime now);
+
+    // Return true if the new Time for the appointment overlaps another appointment
+    @Query("""
+    select count(a) > 0 from Appointment a
+    where a.employee.id = :employeeId
+      and a.date = :date
+      and a.status <> h3rnan11.smartbooking.Appointment.Status.CANCELLED
+      and (:excludeId is null or a.id <> :excludeId)
+      and a.startTime < :end
+      and a.endTime > :start
+""")
+    boolean existsOverlap(@Param("employeeId") Integer employeeId,
+                          @Param("date") LocalDate date,
+                          @Param("start") LocalTime start,
+                          @Param("end") LocalTime end,
+                          @Param("excludeId") Integer excludeId);
 
 }
