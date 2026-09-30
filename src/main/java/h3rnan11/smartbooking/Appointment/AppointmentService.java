@@ -3,6 +3,7 @@ package h3rnan11.smartbooking.Appointment;
 import h3rnan11.smartbooking.DTO.DtoAppointments;
 import h3rnan11.smartbooking.DTO.DtoEmployeeResponse;
 import h3rnan11.smartbooking.DTO.DtoUpdateAppointment;
+import h3rnan11.smartbooking.Local.Local;
 import h3rnan11.smartbooking.Role.Role;
 import h3rnan11.smartbooking.User.User;
 import h3rnan11.smartbooking.User.UserRepository;
@@ -43,13 +44,7 @@ public class AppointmentService {
         };
     }
 
-    public List<DtoEmployeeResponse> getAllEmployeesFromLocal(Integer id){
-        List<DtoEmployeeResponse> employees = userRepository.getAllEmployeesFromLocal(id);
-        if(employees.isEmpty())
-            throw AppointmentException.notFound("Not employees found for the selected local");
-        else
-            return employees;
-    }
+
 
     @Transactional
     public void cancelAppointment (String email, Integer id){
@@ -69,6 +64,11 @@ public class AppointmentService {
         Appointment apt = appointmentRepository.findById(id)
                 .orElseThrow(() -> AppointmentException.notFound("No appointment found with id " + id));
 
+        // USER confirmation
+        if (!Objects.equals(apt.getClient().getEmail(), email) && !Objects.equals(apt.getEmployee().getEmail(), email)) {
+            throw AppointmentException.forbidden("User not allow to update foreign appointments");
+        }
+
         //If employeeId is null we left the previous employee
         User employee = (appointment.employeeId() == null)
                 ? apt.getEmployee()
@@ -76,19 +76,18 @@ public class AppointmentService {
                 .orElseThrow(() -> AppointmentException.notFound(
                         "No employee found with id " + appointment.employeeId()));
 
-        if(!employee.getRole().equals(Role.EMPLOYEE) || !employee.getLocal().equals(apt.getEmployee().getLocal())){
+
+        Local newLocal = employee.getLocal();
+        Local aptLocal = apt.getEmployee().getLocal();
+        if (employee.getRole() != Role.EMPLOYEE
+                || newLocal == null
+                || !Objects.equals(newLocal.getId(), aptLocal.getId())) {
             throw AppointmentException.badRequest("employeeId does not match with an employee from the local selected");
         }
 
-        // USER confirmation
-        if (!Objects.equals(apt.getClient().getEmail(), email) && !Objects.equals(apt.getEmployee().getEmail(), email)) {
-            throw AppointmentException.forbidden("User not allow to update foreign appointments");
-        }
-
-
         // STATUS confirmation
         if (apt.getStatus() == Status.CANCELLED || apt.getStatus() == Status.COMPLETED) {
-            throw AppointmentException.badRequest("You cant update an appointment that is CANCELED or COMPLETED");
+            throw AppointmentException.conflict("You cant update an appointment that is CANCELED or COMPLETED");
         }
 
         // DATE confirmation
