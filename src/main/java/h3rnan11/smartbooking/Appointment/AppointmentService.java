@@ -6,10 +6,12 @@ import h3rnan11.smartbooking.DTO.DtoUpdateAppointment;
 import h3rnan11.smartbooking.Role.Role;
 import h3rnan11.smartbooking.User.User;
 import h3rnan11.smartbooking.User.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
@@ -49,30 +51,54 @@ public class AppointmentService {
             return employees;
     }
 
-    public boolean cancelAppointment (String email, Integer id){
-        Appointment apt = appointmentRepository.getAppointmentById(id);
+    @Transactional
+    public void cancelAppointment (String email, Integer id){
+        Appointment apt = appointmentRepository.findById(id)
+                .orElseThrow(() -> AppointmentException.notFound("No appointment found with id " + id));
         if(Objects.equals(apt.getEmployee().getEmail(), email)
                 || Objects.equals(apt.getClient().getEmail(), email)){
             apt.setStatus(Status.CANCELLED);
             appointmentRepository.save(apt);
-            return true;
         }
         throw AppointmentException.forbidden("User not allow");
     }
 
-    public void updateAppointment (String email, DtoUpdateAppointment appointment){
-        Appointment apt = appointmentRepository.findById(appointment.id())
-                .orElseThrow(() -> AppointmentException.notFound("No appointment found with id " + appointment.id()));
+    @Transactional
+    public void updateAppointment (String email, DtoUpdateAppointment appointment, Integer id) {
+        Appointment apt = appointmentRepository.findById(id)
+                .orElseThrow(() -> AppointmentException.notFound("No appointment found with id " + id));
         User employee = userRepository.findById(appointment.employeeId())
                 .orElseThrow(() -> AppointmentException.notFound("No employee found with id " + appointment.employeeId()));
 
-        if(!Objects.equals(apt.getClient().getEmail(), email) && !Objects.equals(apt.getEmployee().getEmail(), email)){
+        // USER confirmation
+        if (!Objects.equals(apt.getClient().getEmail(), email) && !Objects.equals(apt.getEmployee().getEmail(), email)) {
             throw AppointmentException.forbidden("User not allow to update foreign appointments");
         }
+        // STATUS confirmation
+        if (apt.getStatus() == Status.CANCELLED || apt.getStatus() == Status.COMPLETED) {
+            throw AppointmentException.forbidden("You cant update an appointment that is CANCELED or COMPLETED");
+        }
 
+        // DATE confirmation
+        if (appointment.date() == null || appointment.startTime() == null) {
+            throw AppointmentException.badRequest("Appointment date/startTime cant be null");
+        }
+        LocalDateTime asd = LocalDateTime.of(appointment.date(), appointment.startTime());
+        if(asd.isBefore(LocalDateTime.now(clock))){
+            throw AppointmentException.badRequest("You cannot reserve on a previous date or time");
+        }
         apt.setEmployee(employee);
         apt.setDate(appointment.date());
         apt.setStartTime(appointment.startTime());
+
+        if(appointmentRepository.existsOverlap(
+                apt.getEmployee().getId(),
+                apt.getDate(),
+                apt.getStartTime(),
+                apt.getEndTime(),
+                id))
+            throw AppointmentException.conflict("The spot for this appointment overlap another one");
+
         appointmentRepository.save(apt);
     }
 }

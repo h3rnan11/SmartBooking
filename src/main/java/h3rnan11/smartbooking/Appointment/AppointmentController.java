@@ -35,23 +35,23 @@ public class AppointmentController {
         return appointmentService.getAppointments(email, role);
     }
 
-    @PatchMapping("{id}/canceled")
+    @PatchMapping("{id}/cancel")
     public ResponseEntity<?> cancelAppointment(Authentication authentication, @PathVariable("id") Integer id){
         String email = authentication.getName();
-        if(appointmentService.cancelAppointment(email, id)){
-            return ResponseEntity.ok("Appointment with id:"+id+", cancelled correctly");
-        }else
-            return ResponseEntity.ofNullable("User not allow");
+        appointmentService.cancelAppointment(email, id);
+        return ResponseEntity.ok("Cancelled appointment with id ["+id+"]");
     }
 
-    @PatchMapping("/updated")
-    public ResponseEntity<?> updateAppointment(Authentication authentication, @RequestBody DtoUpdateAppointment appointment){
+    @PutMapping("{id}/update")
+    public ResponseEntity<?> updateAppointment(Authentication authentication,
+                                               @PathVariable("id") Integer id,
+                                               @RequestBody DtoUpdateAppointment appointment){
         String email = authentication.getName();
-        appointmentService.updateAppointment(email, appointment);
-        return ResponseEntity.ok("Appointment with id:"+appointment.id()+", updated correctly");
+        appointmentService.updateAppointment(email, appointment, id);
+        return ResponseEntity.ok("Appointment with id:"+id+", updated correctly");
     }
 
-    @GetMapping("/getEmployees/{id}")
+    @GetMapping("/locals/{id}/employees")
     public ResponseEntity<List<DtoEmployeeResponse>> getAllEmployeesFromLocal(@PathVariable("id") Integer id){
         return ResponseEntity.of(Optional.ofNullable(appointmentService.getAllEmployeesFromLocal(id)));
     }
