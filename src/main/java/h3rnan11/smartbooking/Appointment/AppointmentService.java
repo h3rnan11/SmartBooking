@@ -1,7 +1,6 @@
 package h3rnan11.smartbooking.Appointment;
 
 import h3rnan11.smartbooking.DTO.DtoAppointments;
-import h3rnan11.smartbooking.DTO.DtoEmployeeResponse;
 import h3rnan11.smartbooking.DTO.DtoUpdateAppointment;
 import h3rnan11.smartbooking.Local.Local;
 import h3rnan11.smartbooking.Role.Role;
@@ -95,7 +94,7 @@ public class AppointmentService {
             throw AppointmentException.badRequest("Appointment date/startTime cant be null");
         }
         LocalDateTime newDateTime = LocalDateTime.of(appointment.date(), appointment.startTime());
-        if(newDateTime.isBefore(LocalDateTime.now(clock))){
+        if(!newDateTime.isAfter(LocalDateTime.now(clock))){
             throw AppointmentException.badRequest("You cannot reserve on a previous date or time");
         }
         apt.setEmployee(employee);
