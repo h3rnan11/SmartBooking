@@ -50,7 +50,8 @@ public class AppointmentService {
 
         if(Objects.equals(apt.getEmployee().getEmail(), email)
                 || Objects.equals(apt.getClient().getEmail(), email)){
-            if(apt.getStatus().equals(Status.CONFIRMED)){
+            if(apt.getStatus().equals(Status.CONFIRMED)
+                || apt.getStatus().equals(Status.PENDING)){
                 apt.setStatus(Status.CANCELLED);
                 appointmentRepository.save(apt);
                 return;

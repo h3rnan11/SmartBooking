@@ -268,9 +268,11 @@ public class AppointmentServiceTest {
         verify(appointmentRepository, never()).save(any());
     }
 
-    @Test
-    void cancel_clientCanCancelAppointment_setsStatusCancelled(){
+    @ParameterizedTest
+    @EnumSource(value = Status.class, names = {"CONFIRMED", "PENDING"})
+    void cancel_clientCanCancelAppointment_setsStatusCancelled(Status status){
         // Given
+        apt.setStatus(status);
         when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
 
         // When
@@ -310,4 +312,5 @@ public class AppointmentServiceTest {
         assertEquals(HttpStatus.CONFLICT, ex.getStatus());
         verify(appointmentRepository, never()).save(any());
     }
+
 }
