@@ -1,24 +1,60 @@
-# SMARTBOOKING
+# SmartBooking
 
-## Markdown
-1. [Description](#Description)
-2. [Configuration](#configuration)
-3. [Entities](#Entities)
-4. [Other Classes](#other-classes)
+SmartBooking is a web application that lets clients book appointments at service businesses (hairdressers, physiotherapists, dentists...) without making a phone call.
+Clients, employees and owners each see the appointments that concern them, and clients and employees can reschedule or cancel them in a few clicks.
 
+## Table of Contents
 
-## Description
-SmartBooking is a software developed to simplify the task of making an appointment without any call. 
-It gives the client the possibility of create, modify or cancel any appointment with a few clicks.
-<!-- TODO finish the description -->
+1. [Features](#features)
+2. [Roles](#roles)
+3. [Tech Stack](#tech-stack)
+4. [Getting Started](#getting-started)
+5. [Test Users](#test-users)
+6. [Project Structure](#project-structure)
+7. [Documentation](#documentation)
+8. [Roadmap](#roadmap)
 
-## Configuration
-The secret used to sign JWT tokens is not stored in the repository. It is read from the `SMARTBOOKING_JWT_SECRET` environment variable, and the backend won't start without it.
+## Features
 
-- **Docker Compose:** copy [.env.example](.env.example) to `.env` and fill in `SMARTBOOKING_JWT_SECRET`. `docker compose` reads `.env` automatically and passes the value to the backend. [start-project.ps1](start-project.ps1) creates `.env` with a random secret if it doesn't exist.
-- **Running locally (IDE / `mvnw spring-boot:run`):** set `SMARTBOOKING_JWT_SECRET` in your shell or in the run configuration.
+| Feature | Status |
+| --- | --- |
+| Log in with JWT | API + UI |
+| Register as a new client | API only |
+| View your upcoming appointments | API + UI |
+| Reschedule an appointment (date, time, employee) | API only (UI pending) |
+| Cancel an appointment | API only (UI pending) |
 
-The secret must be at least 32 characters (256 bits for HS256). Generate one with:
+## Roles
+
+Permissions are enforced by the API, regardless of what the UI shows.
+
+| Role | Permissions |
+| --- | --- |
+| `CLIENT` | View, reschedule and cancel their own appointments. New users register as clients. |
+| `EMPLOYEE` | View, reschedule and cancel the appointments assigned to them. |
+| `OWNER` | View every appointment of their business. |
+| `ADMIN` | System administrator. No appointment features yet. |
+
+## Tech Stack
+
+- **Backend:** Java 21, Spring Boot 4.1, Spring Security (stateless JWT with jjwt, BCrypt passwords), Spring Data JPA / Hibernate.
+- **Frontend:** Angular 21 (signals, route guards, HTTP interceptor).
+- **Database:** MySQL 8, with sample data loaded from `src/main/resources/data.sql` on startup.
+- **Testing:** JUnit 5, Mockito and AssertJ.
+- **Environment:** Docker Compose.
+
+## Getting Started
+
+### Requirements
+
+- Docker Desktop
+- Java 21 (only to run the tests or the backend outside Docker)
+
+### 1. Configure the JWT secret
+
+The secret used to sign JWT tokens is not stored in the repository. The backend reads it from the `SMARTBOOKING_JWT_SECRET` environment variable and won't start without it.
+
+Copy [.env.example](.env.example) to `.env` and fill in `SMARTBOOKING_JWT_SECRET` with at least 32 characters. You can generate one with:
 
 ```bash
 openssl rand -base64 32
@@ -26,47 +62,71 @@ openssl rand -base64 32
 
 `.env` is git-ignored; never commit it. Changing the secret invalidates every token issued before.
 
-## Entities
-1. [User](#user)
-2. [Role](#role)
-3. [Appointment](#appointment)
-4. [Local](#local)
-5. [EmployeeSchedule](#employeeschedule)
+To run the backend from your IDE or with `./mvnw spring-boot:run`, set `SMARTBOOKING_JWT_SECRET` in your shell or run configuration instead.
 
-### User
-[User.java](src/main/java/h3rnan11/smartbooking/User/User.java) - Represents any person using the platform (client, employee or owner). Holds personal data and links to their role, local and appointments.
+### 2. Start everything
 
-### Role
-[Role.java](src/main/java/h3rnan11/smartbooking/Role/Role.java) - Enum with the permission level of a user: `ADMIN`, `CLIENT`, `EMPLOYEE` or `OWNER`.
+```bash
+docker compose up -d --build
+```
 
-### Appointment
-[Appointment.java](src/main/java/h3rnan11/smartbooking/Appointment/Appointment.java) - A booking made by a client with an employee, with a date, time range and status.
+On Windows you can run [start-project.ps1](start-project.ps1) instead: it waits for Docker, checks that the ports are free and creates `.env` with a random secret if it doesn't exist.
 
-### Local
-[Local.java](src/main/java/h3rnan11/smartbooking/Local/Local.java) - A business premises owned by a user, with its employees and a category.
+| Service | URL |
+| --- | --- |
+| Frontend | http://localhost:4200 |
+| API | http://localhost:8080/smartBooking/smart-booking |
+| MySQL | localhost:3306 |
 
-### EmployeeSchedule
-[EmployeeSchedule.java](src/main/java/h3rnan11/smartbooking/EmployeeSchedule/EmployeeSchedule.java) - Defines the working days and hours of an employee.
+### 3. Run the tests
 
-## Other Classes
-1. [Category](#category)
-2. [Status](#status) 
-3. [AdminSeeder](#AdminSeeder)
-4. [SecurityConfig](#SecurityConfig)
-5. [UserDetailsServiceImpl](#UserDetailsServiceImpl)
+```bash
+./mvnw test
+```
 
-### Category
-[Category.java](src/main/java/h3rnan11/smartbooking/Utils/Category.java) - Enum with the type of business a `Local` offers (hairdresser, nail salon, massage, etc.).
+## Test Users
 
-### Status
-[Status.java](src/main/java/h3rnan11/smartbooking/Utils/Status.java) - Enum with the possible states of an `Appointment` (pending, confirmed, canceled, completed).
+`data.sql` creates these users on startup. All of them use the password `password123`.
 
-### AdminSeeder
-[AdminSeeder.java](src/main/java/h3rnan11/smartbooking/Config/AdminSeeder.java) - Runs on startup and creates the initial `ADMIN` user (from credentials in `application.properties`) if one doesn't already exist.
+| Email | Role |
+| --- | --- |
+| `ana.client@smartbooking.com` | Client |
+| `pedro.client@smartbooking.com` | Client |
+| `lucia.employee@smartbooking.com` | Employee |
+| `marcos.employee@smartbooking.com` | Employee |
+| `carlos.owner@smartbooking.com` | Owner of *Bella Hair Studio* |
 
-### SecurityConfig
-[SecurityConfig.java](src/main/java/h3rnan11/smartbooking/Config/SecurityConfig.java) - Configures Spring Security: defines the `PasswordEncoder` (BCrypt) and the `SecurityFilterChain` (stateless sessions, public registration endpoint, HTTP Basic auth for the rest).
+## Project Structure
 
-### UserDetailsServiceImpl
-[UserDetailsServiceImpl](src/main/java/h3rnan11/smartbooking/Config/UserDetailsServiceImpl.java) - Bridges Spring Security with the database: loads a `User` by email and adapts it into Spring's `UserDetails` so the framework can authenticate requests and read the user's role.
-<!-- TODO add the rest utils when they are added to the software -->
+```
+SmartBooking/
+├── src/main/java/h3rnan11/smartbooking/
+│   ├── Appointment/        # Appointments: entity, repository, service, controller
+│   ├── User/               # Users, registration and login
+│   ├── Local/              # Businesses and their employees
+│   ├── Service/            # Services offered by a business (entity only for now)
+│   ├── EmployeeSchedule/   # Employees' working hours
+│   ├── Security/           # JWT generation and validation
+│   ├── Config/             # Spring Security, JWT filter, Clock, admin seeder
+│   ├── DTO/  Role/  Utils/ # Records, role enum, Status and Category enums
+├── src/main/resources/     # application.properties, data.sql
+├── src/test/java/...       # Unit tests (AppointmentServiceTest)
+├── frontend/               # Angular app
+├── docs/                   # Documentation per domain
+└── docker-compose.yml
+```
+
+## Documentation
+
+- [Appointment](docs/appointment.md)
+- More domains coming soon.
+
+## Roadmap
+
+- [ ] UI to reschedule and cancel appointments
+- [ ] Pessimistic lock on the employee when booking or rescheduling
+- [ ] Book new appointments based on each employee's free slots
+- [ ] Calendar view of your appointments
+- [ ] Admin metrics
+- [ ] Documentation for every domain in `docs/`
+- [ ] CI with GitHub Actions and Swagger (springdoc)

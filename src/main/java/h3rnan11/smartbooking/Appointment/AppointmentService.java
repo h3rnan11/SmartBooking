@@ -43,17 +43,20 @@ public class AppointmentService {
         };
     }
 
-
-
     @Transactional
     public void cancelAppointment (String email, Integer id){
         Appointment apt = appointmentRepository.findById(id)
                 .orElseThrow(() -> AppointmentException.notFound("No appointment found with id " + id));
+
         if(Objects.equals(apt.getEmployee().getEmail(), email)
                 || Objects.equals(apt.getClient().getEmail(), email)){
-            apt.setStatus(Status.CANCELLED);
-            appointmentRepository.save(apt);
-            return;
+            if(apt.getStatus().equals(Status.CONFIRMED)
+                || apt.getStatus().equals(Status.PENDING)){
+                apt.setStatus(Status.CANCELLED);
+                appointmentRepository.save(apt);
+                return;
+            }
+            throw AppointmentException.conflict("Appointment cant be canceled");
         }
         throw AppointmentException.forbidden("User not allow");
     }

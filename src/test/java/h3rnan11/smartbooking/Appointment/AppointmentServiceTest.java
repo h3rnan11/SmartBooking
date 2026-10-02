@@ -1,5 +1,6 @@
 package h3rnan11.smartbooking.Appointment;
 
+import com.nimbusds.oauth2.sdk.http.HTTPRequestSender;
 import h3rnan11.smartbooking.DTO.DtoUpdateAppointment;
 import h3rnan11.smartbooking.Local.Local;
 import h3rnan11.smartbooking.Role.Role;
@@ -144,6 +145,7 @@ public class AppointmentServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
         verify(appointmentRepository, never()).save(any());
     }
+
     @ParameterizedTest
     @EnumSource(value = Status.class, names = {"CANCELLED", "COMPLETED"})
     void update_appointmentNotModifiable_throwsConflict(Status status){
@@ -236,6 +238,79 @@ public class AppointmentServiceTest {
         assertEquals(apt.getDate(), dto.date());
         assertEquals(apt.getStartTime(), dto.startTime());
         verify(appointmentRepository).save(apt);
+    }
+
+    @Test
+    void cancel_idNotFound_throwsNotFound(){
+        // Given
+        when(appointmentRepository.findById(10)).thenReturn(Optional.empty());
+
+        // When
+        AppointmentException ex = assertThrows(AppointmentException.class,
+                () -> service.cancelAppointment("ana@test.com",10));
+
+        // Then
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatus());
+        verify(appointmentRepository, never()).save(any());
+    }
+
+    @Test
+    void cancel_notInvolvedUser_throwsForbidden(){
+        // Given
+        when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
+
+        // When
+        AppointmentException ex = assertThrows(AppointmentException.class,
+                () -> service.cancelAppointment("intruso@test.com",10));
+
+        // Then
+        assertEquals(HttpStatus.FORBIDDEN, ex.getStatus());
+        verify(appointmentRepository, never()).save(any());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Status.class, names = {"CONFIRMED", "PENDING"})
+    void cancel_clientCanCancelAppointment_setsStatusCancelled(Status status){
+        // Given
+        apt.setStatus(status);
+        when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
+
+        // When
+        service.cancelAppointment("ana@test.com", 10);
+
+        // Then
+        assertEquals(Status.CANCELLED, apt.getStatus());
+        verify(appointmentRepository).save(apt);
+    }
+
+    @Test
+    void cancel_EmployeeCanCancelAppointment_setsStatusCancelled(){
+        // Given
+        when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
+
+        // When
+        service.cancelAppointment("lucia@test.com", 10);
+
+        // Then
+        assertEquals(Status.CANCELLED, apt.getStatus());
+        verify(appointmentRepository).save(apt);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Status.class, names = {"COMPLETED", "CANCELLED"})
+    void cancel_notValidStatus_throwsConflict(Status status){
+        // Given
+        apt.setStatus(status);
+        when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
+
+        // When
+        AppointmentException ex = assertThrows(AppointmentException.class,
+                () -> service.cancelAppointment("lucia@test.com", 10));
+
+
+        // Then
+        assertEquals(HttpStatus.CONFLICT, ex.getStatus());
+        verify(appointmentRepository, never()).save(any());
     }
 
 }
