@@ -1,6 +1,7 @@
 package h3rnan11.smartbooking.Appointment;
 
 import h3rnan11.smartbooking.DTO.DtoAppointments;
+import h3rnan11.smartbooking.DTO.DtoNewAppointment;
 import h3rnan11.smartbooking.DTO.DtoUpdateAppointment;
 import h3rnan11.smartbooking.Role.Role;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping(value = "/smart-booking/appointments")
@@ -24,7 +26,7 @@ public class AppointmentController {
         String email = authentication.getName();
         Role role = authentication.getAuthorities().stream()
                 .findFirst()
-                .map(a -> Role.valueOf(a.getAuthority().replace("ROLE_", "")))
+                .map(a -> Role.valueOf(Objects.requireNonNull(a.getAuthority()).replace("ROLE_", "")))
                 .orElseThrow();
 
         return appointmentService.getAppointments(email, role);
@@ -44,6 +46,14 @@ public class AppointmentController {
         String email = authentication.getName();
         appointmentService.updateAppointment(email, appointment, id);
         return ResponseEntity.ok("Appointment with id:"+id+", updated correctly");
+    }
+
+    @PostMapping("/me")
+    public ResponseEntity<?> createNewAppointment(Authentication authentication,
+                                                  @RequestBody DtoNewAppointment appointment){
+        String email = authentication.getName();
+        Appointment apt = appointmentService.newAppointment(email, appointment);
+        return ResponseEntity.ok("Appointment created correctly: "+apt.toString());
     }
 
 

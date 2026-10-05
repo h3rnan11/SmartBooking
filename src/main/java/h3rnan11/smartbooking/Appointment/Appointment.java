@@ -112,4 +112,16 @@ public class Appointment {
         this.service = service;
         deriveEndTime();
     }
+
+    @Override
+    public String toString() {
+        return "Appointment{" +
+                ", date=" + date +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", status=" + status +
+                ", employee=" + employee.getName() + employee.getLastName() +
+                ", service=" + service.getName() + service.getDurationMinutes() +
+                '}';
+    }
 }

@@ -67,5 +67,4 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
                           @Param("start") LocalTime start,
                           @Param("end") LocalTime end,
                           @Param("excludeId") Integer excludeId);
-
 }
