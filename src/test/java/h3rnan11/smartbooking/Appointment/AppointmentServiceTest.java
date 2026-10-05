@@ -1,9 +1,11 @@
 package h3rnan11.smartbooking.Appointment;
 
-import com.nimbusds.oauth2.sdk.http.HTTPRequestSender;
 import h3rnan11.smartbooking.DTO.DtoUpdateAppointment;
+import h3rnan11.smartbooking.EmployeeSchedule.EmployeeScheduleRepository;
 import h3rnan11.smartbooking.Local.Local;
 import h3rnan11.smartbooking.Role.Role;
+import h3rnan11.smartbooking.Service.Service;
+import h3rnan11.smartbooking.Service.ServiceRepository;
 import h3rnan11.smartbooking.User.User;
 import h3rnan11.smartbooking.User.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
+import java.math.BigDecimal;
 import java.time.*;
 import java.util.Optional;
 
@@ -29,6 +32,8 @@ public class AppointmentServiceTest {
 
     @Mock AppointmentRepository appointmentRepository;
     @Mock UserRepository userRepository;
+    @Mock ServiceRepository serviceRepository;
+    @Mock EmployeeScheduleRepository employeeScheduleRepository;
 
     Clock clock = Clock.fixed(Instant.parse("2026-10-01T10:00:00Z"), ZoneOffset.UTC);
 
@@ -38,14 +43,23 @@ public class AppointmentServiceTest {
     User client;
     User employee;
     Appointment apt;
+    Service serviceType;
 
     @BeforeEach
     void setUp(){
-        service = new AppointmentService(appointmentRepository, userRepository, clock);
+        service = new AppointmentService(appointmentRepository, userRepository,
+                clock, serviceRepository, employeeScheduleRepository);
 
         local = new Local();
         client = user(1, "ana@test.com", Role.CLIENT);
         employee = user(2, "lucia@test.com", Role.EMPLOYEE);
+
+        serviceType = new Service();
+        serviceType.setLocal(local);
+        serviceType.setId(1);
+        serviceType.setDurationMinutes(30);
+        serviceType.setName("Hair cut");
+        serviceType.setPrice(BigDecimal.valueOf(14.5));
 
         apt = new Appointment();
         apt.setId(10);
@@ -55,6 +69,7 @@ public class AppointmentServiceTest {
         apt.setDate(LocalDate.of(2026, 10, 5));
         apt.setStartTime(LocalTime.of(10, 0));
         apt.setEndTime(LocalTime.of(10, 30));
+        apt.setService(serviceType);
     }
 
 
@@ -225,6 +240,26 @@ public class AppointmentServiceTest {
     }
 
     @Test
+    void update_newStartTime_checksOverlapWithRecalculatedEndTime(){
+        // Given
+        when(appointmentRepository.existsOverlap
+                (2, LocalDate.of(2026,10,6),
+                        LocalTime.of(12,0), LocalTime.of(12,30), 10)).thenReturn(false);
+        when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
+        var dto = new DtoUpdateAppointment(null, LocalDate.of(2026, 10, 6), LocalTime.of(12, 0));
+
+
+        // When
+        service.updateAppointment("lucia@test.com", dto, 10);
+
+        // Then
+        assertEquals(apt.getDate(), dto.date());
+        assertEquals(apt.getStartTime(), dto.startTime());
+        assertEquals(apt.getEndTime(), dto.startTime().plusMinutes(30));
+        verify(appointmentRepository).save(apt);
+    }
+
+    @Test
     void update_employeeCanUpdateAppointments_throwsConflict(){
         // Given
         when(appointmentRepository.existsOverlap(any(), any(), any(), any(), any())).thenReturn(false);
@@ -235,8 +270,8 @@ public class AppointmentServiceTest {
         service.updateAppointment("lucia@test.com", dto, 10);
 
         // Then
-        assertEquals(apt.getDate(), dto.date());
-        assertEquals(apt.getStartTime(), dto.startTime());
+        assertEquals(dto.date(), apt.getDate());
+        assertEquals(dto.startTime(), apt.getStartTime());
         verify(appointmentRepository).save(apt);
     }
 
