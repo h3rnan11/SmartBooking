@@ -21,4 +21,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             where u.local.id = :idLocal and u.role = h3rnan11.smartbooking.Role.Role.EMPLOYEE
         """)
     List<DtoEmployeeResponse> getAllEmployeesFromLocal(@Param("idLocal") Integer idLocal);
+
+    User findEmployeeById(Integer id);
 }
