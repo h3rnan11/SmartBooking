@@ -1,5 +1,6 @@
 package h3rnan11.smartbooking.Appointment;
 
+import h3rnan11.smartbooking.DTO.DtoNewAppointment;
 import h3rnan11.smartbooking.DTO.DtoUpdateAppointment;
 import h3rnan11.smartbooking.EmployeeSchedule.EmployeeScheduleRepository;
 import h3rnan11.smartbooking.Local.Local;
@@ -21,8 +22,7 @@ import java.math.BigDecimal;
 import java.time.*;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -44,6 +44,10 @@ public class AppointmentServiceTest {
     User employee;
     Appointment apt;
     Service serviceType;
+    Service notService;
+    User caller;
+    User notEmployee;
+    Local localTest;
 
     @BeforeEach
     void setUp(){
@@ -51,8 +55,11 @@ public class AppointmentServiceTest {
                 clock, serviceRepository, employeeScheduleRepository);
 
         local = new Local();
+        localTest = new Local();
         client = user(1, "ana@test.com", Role.CLIENT);
         employee = user(2, "lucia@test.com", Role.EMPLOYEE);
+        caller = user(3, "role@test.com", Role.EMPLOYEE);
+        notEmployee = user(4, "notEmployee@gmail.com", Role.OWNER);
 
         serviceType = new Service();
         serviceType.setLocal(local);
@@ -60,6 +67,14 @@ public class AppointmentServiceTest {
         serviceType.setDurationMinutes(30);
         serviceType.setName("Hair cut");
         serviceType.setPrice(BigDecimal.valueOf(14.5));
+
+
+        notService = new Service();
+        notService.setLocal(local);
+        notService.setId(2);
+        notService.setDurationMinutes(30);
+        notService.setName("Hair cut");
+        notService.setPrice(BigDecimal.valueOf(14.5));
 
         apt = new Appointment();
         apt.setId(10);
@@ -260,7 +275,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    void update_employeeCanUpdateAppointments_throwsConflict(){
+    void update_employeeCanUpdateAppointments_(){
         // Given
         when(appointmentRepository.existsOverlap(any(), any(), any(), any(), any())).thenReturn(false);
         when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
@@ -348,4 +363,198 @@ public class AppointmentServiceTest {
         verify(appointmentRepository, never()).save(any());
     }
 
+    @Test
+    void new_clientNotFound_throwsNotFound(){
+        // Given
+        when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.empty());
+        DtoNewAppointment apt = new DtoNewAppointment(2,1, LocalDate.of(2026,10,6), LocalTime.of(10,30));
+
+        // When
+        AppointmentException ex = assertThrows(AppointmentException.class,
+                () -> service.newAppointment("ana@test.com",apt));
+
+        // Then
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatus());
+        assertTrue(ex.getMessage().contains("client"));
+        verify(appointmentRepository, never()).save(any());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Role.class, names = {"EMPLOYEE", "OWNER", "ADMIN"})
+    void new_userNotAllow_throwsForbidden(Role role){
+        // Given
+        caller.setRole(role);
+        when(userRepository.findByEmail("role@test.com")).thenReturn(Optional.of(caller));
+        DtoNewAppointment apt = new DtoNewAppointment(2,1, LocalDate.of(2026,10,6), LocalTime.of(10,30));
+
+        // When
+        AppointmentException ex = assertThrows(AppointmentException.class,
+                () -> service.newAppointment("role@test.com",apt));
+
+        // Then
+        assertEquals(HttpStatus.FORBIDDEN, ex.getStatus());
+        verify(appointmentRepository, never()).save(any());
+    }
+
+    @Test
+    void new_employeeNotFound_throwsNotFound(){
+        // Given
+        when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
+        when(userRepository.findById(2)).thenReturn(Optional.empty());
+        DtoNewAppointment apt = new DtoNewAppointment(2,1, LocalDate.of(2026,10,6), LocalTime.of(10,30));
+
+        // When
+        AppointmentException ex = assertThrows(AppointmentException.class,
+                () -> service.newAppointment("ana@test.com",apt));
+
+        // Then
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatus());
+        assertTrue(ex.getMessage().contains("employee"));
+        verify(appointmentRepository, never()).save(any());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Role.class, names = {"OWNER", "ADMIN", "CLIENT"})
+    void new_employeeIsNotAnEmployee_throwsBadRequest(Role role){
+        // Given
+        notEmployee.setRole(role);
+        when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
+        when(userRepository.findById(2)).thenReturn(Optional.of(notEmployee));
+        DtoNewAppointment apt = new DtoNewAppointment(2,1, LocalDate.of(2026,10,6), LocalTime.of(10,30));
+
+        // When
+        AppointmentException ex = assertThrows(AppointmentException.class,
+                () -> service.newAppointment("ana@test.com",apt));
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+        verify(appointmentRepository, never()).save(any());
+    }
+
+    @Test
+    void new_employeeIsNotFromThisLocal_throwsBadRequest(){
+        // Given
+        employee.setLocal(null);
+        when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
+        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        DtoNewAppointment apt = new DtoNewAppointment(2,1, LocalDate.of(2026,10,6), LocalTime.of(10,30));
+
+        // When
+        AppointmentException ex = assertThrows(AppointmentException.class,
+                () -> service.newAppointment("ana@test.com",apt));
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+        verify(appointmentRepository, never()).save(any());
+    }
+
+    @Test
+    void new_serviceDoesNotExist_throwNotFound(){
+        // Given
+        employee.setLocal(local);
+        when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
+        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(serviceRepository.findById(2)).thenReturn(Optional.empty());
+        DtoNewAppointment apt = new DtoNewAppointment(2,2, LocalDate.of(2026,10,6), LocalTime.of(10,30));
+
+        // When
+        AppointmentException ex = assertThrows(AppointmentException.class,
+                () -> service.newAppointment("ana@test.com", apt));
+
+        // Then
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatus());
+        verify(appointmentRepository, never()).save(any());
+    }
+
+    @Test
+    void new_serviceDoesNotExistInCurrentLocal_throwBadRequest(){
+        // Given
+        employee.setLocal(local);
+        notService.setLocal(null);
+        when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
+        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(serviceRepository.findById(2)).thenReturn(Optional.of(notService));
+        DtoNewAppointment apt = new DtoNewAppointment(2,2, LocalDate.of(2026,10,6), LocalTime.of(10,30));
+
+        // When
+        AppointmentException ex = assertThrows(AppointmentException.class,
+                () -> service.newAppointment("ana@test.com", apt));
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+        verify(appointmentRepository, never()).save(any());
+    }
+
+    @Test
+    void new_employeeScheduleDoesNotMatch_throwBadRequest(){
+        LocalDate aptDate = LocalDate.of(2026,10,6);
+        int weekDay = aptDate.getDayOfWeek().getValue();
+        LocalTime aptStartTime = LocalTime.of(10,30);
+        LocalTime aptEndTime = aptStartTime.plusMinutes(serviceType.getDurationMinutes());
+
+        // Given
+        employee.setLocal(local);
+        when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
+        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(serviceRepository.findById(1)).thenReturn(Optional.of(serviceType));
+        when(employeeScheduleRepository.existsSlotForAppointment(2, weekDay, aptStartTime, aptEndTime )).thenReturn(false);
+        DtoNewAppointment apt = new DtoNewAppointment(2,1, aptDate, aptStartTime);
+
+        // When
+        AppointmentException ex = assertThrows(AppointmentException.class,
+                () -> service.newAppointment("ana@test.com", apt));
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+        verify(appointmentRepository, never()).save(any());
+    }
+
+    @Test
+    void new_existsOverlap_throwConflict(){
+        LocalDate aptDate = LocalDate.of(2026,10,6);
+        int weekDay = aptDate.getDayOfWeek().getValue();
+        LocalTime aptStartTime = LocalTime.of(10,30);
+        LocalTime aptEndTime = aptStartTime.plusMinutes(serviceType.getDurationMinutes());
+
+        // Given
+        employee.setLocal(local);
+        when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
+        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(serviceRepository.findById(1)).thenReturn(Optional.of(serviceType));
+        when(employeeScheduleRepository.existsSlotForAppointment(2, weekDay, aptStartTime, aptEndTime )).thenReturn(true);
+        when(appointmentRepository.existsOverlap(2, aptDate, aptStartTime, aptEndTime, null)).thenReturn(true);
+        DtoNewAppointment apt = new DtoNewAppointment(2,1, aptDate, aptStartTime);
+
+        // When
+        AppointmentException ex = assertThrows(AppointmentException.class,
+                () -> service.newAppointment("ana@test.com", apt));
+
+        // Then
+        assertEquals(HttpStatus.CONFLICT, ex.getStatus());
+        verify(appointmentRepository, never()).save(any());
+    }
+
+    @Test
+    void new_clientCanCreateNewAppointment_(){
+        LocalDate aptDate = LocalDate.of(2026,10,6);
+        int weekDay = aptDate.getDayOfWeek().getValue();
+        LocalTime aptStartTime = LocalTime.of(10,30);
+        LocalTime aptEndTime = aptStartTime.plusMinutes(serviceType.getDurationMinutes());
+
+        // Given
+        employee.setLocal(local);
+        when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
+        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(serviceRepository.findById(1)).thenReturn(Optional.of(serviceType));
+        when(employeeScheduleRepository.existsSlotForAppointment(2, weekDay, aptStartTime, aptEndTime )).thenReturn(true);
+        when(appointmentRepository.existsOverlap(2, aptDate, aptStartTime, aptEndTime, null)).thenReturn(false);
+        DtoNewAppointment apt = new DtoNewAppointment(2,1, aptDate, aptStartTime);
+
+        // When
+        Appointment newApt = service.newAppointment("ana@test.com", apt);
+
+        // Then
+
+        verify(appointmentRepository).save(newApt);
+    }
 }
