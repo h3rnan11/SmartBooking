@@ -48,13 +48,15 @@ public class AppointmentController {
         return ResponseEntity.ok("Appointment with id:"+id+", updated correctly");
     }
 
-    @PostMapping("/me")
+    @PostMapping("/appointments")
     public ResponseEntity<?> createNewAppointment(Authentication authentication,
                                                   @RequestBody DtoNewAppointment appointment){
         String email = authentication.getName();
         Appointment apt = appointmentService.newAppointment(email, appointment);
         return ResponseEntity.ok("Appointment created correctly: "+apt.toString());
     }
+
+
 
 
 }

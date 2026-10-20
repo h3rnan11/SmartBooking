@@ -122,21 +122,23 @@ public class AppointmentService {
     public Appointment newAppointment(String email, DtoNewAppointment appointment){
         User client = userRepository.findByEmail(email)
                 .orElseThrow(() -> AppointmentException.notFound("No client found"));
+
         if(!client.getRole().equals(Role.CLIENT)){
             throw AppointmentException.forbidden("Only Clients can create new appointments");
         }
 
         User employee = userRepository.findById(appointment.employeeId())
                 .orElseThrow(() -> AppointmentException.notFound("No employee found with id " + appointment.employeeId()));
-        h3rnan11.smartbooking.Service.Service serviceType = serviceRepository.findById(appointment.serviceId())
-                .orElseThrow(() -> AppointmentException.notFound("No Service found with id "+ appointment.serviceId()));
+
         if(!employee.getRole().equals(Role.EMPLOYEE)
                 || employee.getLocal() == null){
             throw AppointmentException.badRequest("The given employee is not an Employee or doesn't work in this local");
         }
 
-        Local local = employee.getLocal();
+        h3rnan11.smartbooking.Service.Service serviceType = serviceRepository.findById(appointment.serviceId())
+                .orElseThrow(() -> AppointmentException.notFound("No Service found with id "+ appointment.serviceId()));
 
+        Local local = employee.getLocal();
         if(!Objects.equals(serviceType.getLocal(), local)){
             throw AppointmentException.badRequest("The given service does not exists in the current local");
         }
@@ -156,6 +158,7 @@ public class AppointmentService {
                 newApt.getStartTime(), newApt.getEndTime())){
             throw AppointmentException.badRequest("The employee does not work on that day/time");
         }
+
         if(appointmentRepository.existsOverlap(
                 newApt.getEmployee().getId(),
                 newApt.getDate(),
