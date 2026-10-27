@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(value = "/smart-booking/locals")
+@RequestMapping(value = "/locals")
 public class LocalController {
 
     private final LocalService localService;

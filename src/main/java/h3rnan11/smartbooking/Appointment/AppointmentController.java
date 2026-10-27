@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 @RestController
-@RequestMapping(value = "/smart-booking/appointments")
+@RequestMapping(value = "/appointments")
 public class AppointmentController {
 
     private final AppointmentService appointmentService;

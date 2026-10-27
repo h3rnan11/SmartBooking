@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/smart-booking/users/newUser", "/smart-booking/users/logIn").permitAll()
+                        .requestMatchers("/smartBooking/users/newUser", "/smartBooking/users/logIn").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
