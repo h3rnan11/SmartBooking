@@ -4,13 +4,10 @@ import h3rnan11.smartbooking.DTO.DtoLogin;
 import h3rnan11.smartbooking.DTO.DtoNewUser;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/users")
+@RequestMapping(value = "/smart-booking/users")
 public class UserController {
 
     private final UserService userService;
@@ -32,7 +29,7 @@ public class UserController {
     }
 
     @PostMapping("/me")
-    public ResponseEntity<?> setLocalToEmployee(Authentication authentication, Integer employeeId){
+    public ResponseEntity<?> setLocalToEmployee(Authentication authentication, @PathVariable Integer employeeId){
         userService.setEmployeeToLocal(authentication.getName(), employeeId);
         return ResponseEntity.ok("");
     }

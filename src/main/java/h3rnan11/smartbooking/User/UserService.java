@@ -4,14 +4,12 @@ import h3rnan11.smartbooking.DTO.DtoLogin;
 import h3rnan11.smartbooking.DTO.DtoLoginResponse;
 import h3rnan11.smartbooking.DTO.DtoNewUser;
 import h3rnan11.smartbooking.Local.Local;
-import h3rnan11.smartbooking.Local.LocalRepository;
 import h3rnan11.smartbooking.Role.Role;
 import h3rnan11.smartbooking.Security.JwtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.Optional;
 
 
@@ -19,21 +17,18 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final LocalRepository localRepository;
 
     private final PasswordEncoder passwordEncoder;
 
     private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
-                       LocalRepository localRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
-        this.localRepository = localRepository;
     }
 
-    public User newUser(DtoNewUser newUser){
+    public void newUser(DtoNewUser newUser){
         User u = new User();
         u.setName(newUser.name());
         u.setLastName(newUser.lastName());
@@ -46,7 +41,7 @@ public class UserService {
 
         u.setPassword(passwordEncoder.encode(newUser.password()));
         u.setRole(Role.CLIENT);
-        return userRepository.save(u);
+        userRepository.save(u);
     }
 
     public ResponseEntity<?> logIn(DtoLogin dtoLogin){
@@ -65,7 +60,7 @@ public class UserService {
     // UpdateUser
     // DeleteUser
     // SetEmployeeToLocal (if local = null -> employee is "unemployee")
-    public boolean setEmployeeToLocal(String ownerEmail, Integer employeeId){
+    public void setEmployeeToLocal(String ownerEmail, Integer employeeId){
         Optional<User> employee = userRepository.findById(employeeId);
         Optional<User> owner = userRepository.findByEmail(ownerEmail);
 
@@ -92,7 +87,5 @@ public class UserService {
         User newEmployee = employee.get();
         newEmployee.setLocal(localFromOwner);
         userRepository.save(newEmployee);
-
-        return true;
     }
 }
