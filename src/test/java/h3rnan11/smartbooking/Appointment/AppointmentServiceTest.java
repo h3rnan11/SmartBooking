@@ -488,7 +488,6 @@ public class AppointmentServiceTest {
     @Test
     void new_nullDate_badRequest(){
         LocalDate aptDate = LocalDate.of(2026,10,6);
-        LocalTime aptStartTime = null;
 
         // Given
         employee.setLocal(local);
@@ -496,7 +495,7 @@ public class AppointmentServiceTest {
         when(userRepository.findById(2)).thenReturn(Optional.of(employee));
         when(serviceRepository.findById(1)).thenReturn(Optional.of(serviceType));
 
-        DtoNewAppointment apt = new DtoNewAppointment(2,1, aptDate, aptStartTime);
+        DtoNewAppointment apt = new DtoNewAppointment(2,1, aptDate, null);
 
         // When
         AppointmentException ex = assertThrows(AppointmentException.class,
@@ -509,7 +508,6 @@ public class AppointmentServiceTest {
 
     @Test
     void new_nullTime_badRequest(){
-        LocalDate aptDate = null;
         LocalTime aptStartTime = LocalTime.of(10,30);
 
         // Given
@@ -518,7 +516,7 @@ public class AppointmentServiceTest {
         when(userRepository.findById(2)).thenReturn(Optional.of(employee));
         when(serviceRepository.findById(1)).thenReturn(Optional.of(serviceType));
 
-        DtoNewAppointment apt = new DtoNewAppointment(2,1, aptDate, aptStartTime);
+        DtoNewAppointment apt = new DtoNewAppointment(2,1, null, aptStartTime);
 
         // When
         AppointmentException ex = assertThrows(AppointmentException.class,
@@ -532,7 +530,7 @@ public class AppointmentServiceTest {
     @Test
     void new__badRequest(){
         // Test with time = "now" (1/10/2026 10:00), "this moment" is not an available spot.
-        LocalDate aptDate = LocalDate.of(2026,10,1);;
+        LocalDate aptDate = LocalDate.of(2026,10,1);
         LocalTime aptStartTime = LocalTime.of(10,0);
 
         // Given
