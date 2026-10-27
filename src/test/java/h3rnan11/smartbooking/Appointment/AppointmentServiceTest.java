@@ -548,6 +548,7 @@ public class AppointmentServiceTest {
         when(serviceRepository.findById(1)).thenReturn(Optional.of(serviceType));
         when(employeeScheduleRepository.existsSlotForAppointment(2, weekDay, aptStartTime, aptEndTime )).thenReturn(true);
         when(appointmentRepository.existsOverlap(2, aptDate, aptStartTime, aptEndTime, null)).thenReturn(false);
+        when(appointmentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         DtoNewAppointment apt = new DtoNewAppointment(2,1, aptDate, aptStartTime);
 
         // When
