@@ -1,6 +1,7 @@
 package h3rnan11.smartbooking.User;
 
 import h3rnan11.smartbooking.DTO.DtoLogin;
+import h3rnan11.smartbooking.DTO.DtoLoginResponse;
 import h3rnan11.smartbooking.DTO.DtoNewUser;
 import h3rnan11.smartbooking.Local.Local;
 import h3rnan11.smartbooking.Local.LocalRepository;
@@ -53,7 +54,7 @@ public class UserService {
         if(u.isPresent()){
             if(passwordEncoder.matches(dtoLogin.password(), u.get().getPassword())){
                 String token = jwtService.generateToken(u.get().getEmail(), u.get().getRole().name());
-                return ResponseEntity.ok("User {"+dtoLogin.email()+"} logged correctly");
+                return ResponseEntity.ok(new DtoLoginResponse(token, u.get().getEmail(), u.get().getRole().name()));
             }else
                 throw UserException.unauthorized("Wrong password");
         }else {
@@ -64,9 +65,8 @@ public class UserService {
     // UpdateUser
     // DeleteUser
     // SetEmployeeToLocal (if local = null -> employee is "unemployee")
-    public boolean setEmployeeToLocal(Integer employeeId, Integer localId, String ownerEmail){
+    public boolean setEmployeeToLocal(String ownerEmail, Integer employeeId){
         Optional<User> employee = userRepository.findById(employeeId);
-        Optional <Local> local = localRepository.findById(localId);
         Optional<User> owner = userRepository.findByEmail(ownerEmail);
 
         if(owner.isEmpty()){
@@ -76,15 +76,7 @@ public class UserService {
         if(!owner.get().getRole().equals(Role.OWNER)){
             throw UserException.forbidden("User is not allow to modify employees");
         }
-
-        if(local.isEmpty()){
-            throw UserException.notFound("No local found with id: " + localId);
-        }
         Local localFromOwner = owner.get().getLocal();
-
-        if(Objects.equals(local.get().getId(), localFromOwner.getId())){
-            throw UserException.forbidden("You are not authorized on this local");
-        }
 
         if(employee.isEmpty()){
             throw UserException.notFound("Employee with id {"+employeeId+"} does not exists");
@@ -97,11 +89,9 @@ public class UserService {
         if(employee.get().getLocal() != null){
             throw UserException.conflict("Current employee is assigned already to a local");
         }
-
-
-
-        User defEmployee = employee.get();
-        defEmployee.setLocal(localFromOwner);
+        User newEmployee = employee.get();
+        newEmployee.setLocal(localFromOwner);
+        userRepository.save(newEmployee);
 
         return true;
     }

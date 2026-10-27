@@ -486,7 +486,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    void new_nullDate_badRequest(){
+    void new_nullTime_badRequest(){
         LocalDate aptDate = LocalDate.of(2026,10,6);
 
         // Given
@@ -507,7 +507,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    void new_nullTime_badRequest(){
+    void new_nullDate_badRequest(){
         LocalTime aptStartTime = LocalTime.of(10,30);
 
         // Given
@@ -528,7 +528,7 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    void new__badRequest(){
+    void new_startTimeIsNow_throwsBadRequest(){
         // Test with time = "now" (1/10/2026 10:00), "this moment" is not an available spot.
         LocalDate aptDate = LocalDate.of(2026,10,1);
         LocalTime aptStartTime = LocalTime.of(10,0);
