@@ -12,20 +12,5 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/smart-booking")
 public class SmartBookingController {
 
-    private final UserService userService;
 
-    public SmartBookingController(UserService userService) {
-        this.userService = userService;
-    }
-
-    @PostMapping("/newUser")
-    public ResponseEntity<String> newUser(@RequestBody DtoNewUser dtoNewUser){
-        User u = userService.newUser(dtoNewUser);
-        return ResponseEntity.ok("User created correctly " + dtoNewUser);
-    }
-
-    @PostMapping("/logIn")
-    public ResponseEntity<?> logIn(@RequestBody DtoLogin dtoLogin){
-        return userService.logIn(dtoLogin);
-    }
 }

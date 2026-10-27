@@ -48,7 +48,7 @@ public class AppointmentController {
         return ResponseEntity.ok("Appointment with id:"+id+", updated correctly");
     }
 
-    @PostMapping("/appointments")
+    @PostMapping()
     public ResponseEntity<?> createNewAppointment(Authentication authentication,
                                                   @RequestBody DtoNewAppointment appointment){
         String email = authentication.getName();

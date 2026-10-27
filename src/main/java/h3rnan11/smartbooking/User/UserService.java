@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -41,9 +42,11 @@ public class UserService {
         u.setLastName(newUser.lastName());
         u.setEmail(newUser.email());
         Optional<User> doesUserAlreadyExists = userRepository.findByEmail(newUser.email());
+
         if(doesUserAlreadyExists.isPresent()){
             throw UserException.conflict("Email already in use");
         }
+
         u.setPassword(passwordEncoder.encode(newUser.password()));
         u.setRole(Role.CLIENT);
         return userRepository.save(u);
@@ -54,7 +57,7 @@ public class UserService {
         if(u.isPresent()){
             if(passwordEncoder.matches(dtoLogin.password(), u.get().getPassword())){
                 String token = jwtService.generateToken(u.get().getEmail(), u.get().getRole().name());
-                return ResponseEntity.ok(new DtoLoginResponse(token, u.get().getEmail(), u.get().getRole().name()));
+                return ResponseEntity.ok("User {"+dtoLogin.email()+"} logged correctly");
             }else
                 throw UserException.unauthorized("Wrong password");
         }else {
@@ -73,22 +76,36 @@ public class UserService {
         if(owner.isEmpty()){
             throw UserException.notFound("No authentication");
         }
+
+        if(!owner.get().getRole().equals(Role.OWNER)){
+            throw UserException.forbidden("User is not allow to modify employees");
+        }
+
         if(local.isEmpty()){
             throw UserException.notFound("No local found with id: " + localId);
         }
-        if(!owner.get().getLocal().equals(local)){
-            throw UserException.unauthorized("You are not authorized on this local");
+        Local localFromOwner = owner.get().getLocal();
+
+        if(Objects.equals(local.get().getId(), localFromOwner.getId())){
+            throw UserException.forbidden("You are not authorized on this local");
         }
 
         if(employee.isEmpty()){
-            throw UserException.notFound("Employee does not exists");
+            throw UserException.notFound("Employee with id {"+employeeId+"} does not exists");
         }
+
         if(employee.get().getRole() != Role.EMPLOYEE){
             throw UserException.badRequest("The user given is not an employee");
         }
 
+        if(employee.get().getLocal() != null){
+            throw UserException.conflict("Current employee is assigned already to a local");
+        }
 
 
+
+        User defEmployee = employee.get();
+        defEmployee.setLocal(localFromOwner);
 
         return true;
     }
