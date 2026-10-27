@@ -20,7 +20,7 @@ public class UserController {
 
     @PostMapping("/newUser")
     public ResponseEntity<String> newUser(@RequestBody DtoNewUser dtoNewUser){
-        User u = userService.newUser(dtoNewUser);
+        userService.newUser(dtoNewUser);
         return ResponseEntity.ok("User created correctly ");
     }
 

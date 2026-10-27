@@ -1,15 +1,11 @@
 package h3rnan11.smartbooking.User;
 
 import h3rnan11.smartbooking.DTO.DtoLogin;
-import h3rnan11.smartbooking.DTO.DtoLoginResponse;
 import h3rnan11.smartbooking.DTO.DtoNewUser;
 import h3rnan11.smartbooking.Local.Local;
 import h3rnan11.smartbooking.Local.LocalRepository;
 import h3rnan11.smartbooking.Role.Role;
 import h3rnan11.smartbooking.Security.JwtService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
