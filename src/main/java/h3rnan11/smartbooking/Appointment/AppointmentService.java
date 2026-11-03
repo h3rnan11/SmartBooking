@@ -139,7 +139,7 @@ public class AppointmentService {
                 .orElseThrow(() -> AppointmentException.notFound("No Service found with id "+ appointment.serviceId()));
 
         Local local = employee.getLocal();
-        if(Objects.equals(serviceType.getLocal().getId(), local.getId())){
+        if(!Objects.equals(serviceType.getLocal().getId(), local.getId())){
             throw AppointmentException.badRequest("The given service does not exists in the current local");
         }
 
