@@ -31,11 +31,11 @@ export class Auth {
   private readonly http = inject(HttpClient);
 
   login(request: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${API_URL}/logIn`, request);
+    return this.http.post<LoginResponse>('${API_URL}/users/logIn', request);
   }
 
   register(request: RegisterRequest): Observable<string> {
-    return this.http.post(`${API_URL}/newUser`, request, { responseType: 'text' });
+    return this.http.post(`${API_URL}/users/newUser`, request, { responseType: 'text' });
   }
 
   isAuthenticated(): boolean {
