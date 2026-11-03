@@ -18,7 +18,7 @@ public class LocalService {
     public List<DtoEmployeeResponse> getAllEmployeesFromLocal(Integer id){
         List<DtoEmployeeResponse> employees = userRepository.getAllEmployeesFromLocal(id);
         if(employees.isEmpty())
-            throw
+            return null;
         else
             return employees;
     }
