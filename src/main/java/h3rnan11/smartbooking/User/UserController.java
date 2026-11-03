@@ -28,7 +28,7 @@ public class UserController {
         return userService.logIn(dtoLogin);
     }
 
-    @PostMapping("/me/{id}")
+    @PutMapping("/{employeeId}/local")
     public ResponseEntity<?> setLocalToEmployee(Authentication authentication, @PathVariable Integer employeeId){
         userService.setEmployeeToLocal(authentication.getName(), employeeId);
         return ResponseEntity.ok("");
