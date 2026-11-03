@@ -31,7 +31,7 @@ export class Auth {
   private readonly http = inject(HttpClient);
 
   login(request: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>('${API_URL}/users/logIn', request);
+    return this.http.post<LoginResponse>(`${API_URL}/users/logIn`, request);
   }
 
   register(request: RegisterRequest): Observable<string> {
