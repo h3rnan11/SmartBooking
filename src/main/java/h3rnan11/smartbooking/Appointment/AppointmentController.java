@@ -53,7 +53,7 @@ public class AppointmentController {
                                                   @RequestBody DtoNewAppointment appointment){
         String email = authentication.getName();
         Appointment apt = appointmentService.newAppointment(email, appointment);
-        return ResponseEntity.ok("Appointment created correctly: "+apt.toString());
+        return ResponseEntity.ok("Appointment created correctly " + appointment);
     }
 
 

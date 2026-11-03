@@ -620,7 +620,10 @@ public class AppointmentServiceTest {
         Appointment newApt = service.newAppointment("ana@test.com", apt);
 
         // Then
-
+        assertEquals(client, newApt.getClient());
+        assertEquals(employee, newApt.getEmployee());
+        assertEquals(Status.CONFIRMED, newApt.getStatus());
+        assertEquals(LocalTime.of(11, 0), newApt.getEndTime());
         verify(appointmentRepository).save(newApt);
     }
 }

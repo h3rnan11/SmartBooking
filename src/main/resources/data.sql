@@ -2,7 +2,7 @@
 -- All users share the password "password123" (BCrypt hash below).
 
 INSERT IGNORE INTO users (id, name, last_name, email, password, role, id_local) VALUES
-    (10, 'Carlos', 'Ramirez', 'carlos.owner@smartbooking.com', '$2a$10$fZp7jLgqTZ635JiRlPuvgOmynWh9LJK.hUxZFBYUnQ.KVFoc7HTx6', 'OWNER', NULL);
+    (10, 'Carlos', 'Ramirez', 'carlos.owner@smartbooking.com', '$2a$10$fZp7jLgqTZ635JiRlPuvgOmynWh9LJK.hUxZFBYUnQ.KVFoc7HTx6', 'OWNER', 1);
 
 INSERT IGNORE INTO local (id, name, location, id_owner, category) VALUES
     (1, 'Bella Hair Studio', 'Av. Principal 123, Springfield', 10, 'HAIR_DRESSER');

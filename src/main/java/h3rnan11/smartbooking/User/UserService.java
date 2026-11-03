@@ -57,6 +57,16 @@ public class UserService {
         }
     }
 
+    public void updateUser(String email, DtoNewUser updatedUser){
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if(optionalUser.isEmpty()){
+            throw UserException.conflict("No user with email given");
+        }
+        User user = optionalUser.get();
+        user.setName(updatedUser.name());
+        user.setLastName(updatedUser.lastName());
+        user.setPassword(updatedUser.password());
+    }
     // UpdateUser
     // DeleteUser
     // SetEmployeeToLocal (if local = null -> employee is "unemployee")
