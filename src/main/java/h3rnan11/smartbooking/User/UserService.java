@@ -65,10 +65,19 @@ public class UserService {
         User user = optionalUser.get();
         user.setName(updatedUser.name());
         user.setLastName(updatedUser.lastName());
-        user.setPassword(updatedUser.password());
+        user.setPassword(passwordEncoder.encode(updatedUser.password()));
+        userRepository.save(user);
     }
-    // UpdateUser
-    // DeleteUser
+
+    public void deleteUser(String email){
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if(optionalUser.isEmpty()){
+            throw UserException.conflict("No user with email given");
+        }
+        User user = optionalUser.get();
+        userRepository.delete(user);
+    }
+
     // SetEmployeeToLocal (if local = null -> employee is "unemployee")
     public void setEmployeeToLocal(String ownerEmail, Integer employeeId){
         Optional<User> employee = userRepository.findById(employeeId);

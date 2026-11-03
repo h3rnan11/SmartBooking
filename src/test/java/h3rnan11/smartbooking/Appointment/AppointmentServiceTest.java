@@ -55,7 +55,9 @@ public class AppointmentServiceTest {
                 clock, serviceRepository, employeeScheduleRepository);
 
         local = new Local();
+        local.setId(1);
         localTest = new Local();
+        localTest.setId(2);
         client = user(1, "ana@test.com", Role.CLIENT);
         employee = user(2, "lucia@test.com", Role.EMPLOYEE);
         caller = user(3, "role@test.com", Role.EMPLOYEE);
@@ -70,7 +72,7 @@ public class AppointmentServiceTest {
 
 
         notService = new Service();
-        notService.setLocal(local);
+        notService.setLocal(localTest);
         notService.setId(2);
         notService.setDurationMinutes(30);
         notService.setName("Hair cut");
@@ -470,7 +472,6 @@ public class AppointmentServiceTest {
     void new_serviceDoesNotExistInCurrentLocal_throwBadRequest(){
         // Given
         employee.setLocal(local);
-        notService.setLocal(null);
         when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
         when(userRepository.findById(2)).thenReturn(Optional.of(employee));
         when(serviceRepository.findById(2)).thenReturn(Optional.of(notService));

@@ -4,6 +4,7 @@ import h3rnan11.smartbooking.DTO.DtoAppointments;
 import h3rnan11.smartbooking.DTO.DtoNewAppointment;
 import h3rnan11.smartbooking.DTO.DtoUpdateAppointment;
 import h3rnan11.smartbooking.Role.Role;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -53,7 +54,7 @@ public class AppointmentController {
                                                   @RequestBody DtoNewAppointment appointment){
         String email = authentication.getName();
         Appointment apt = appointmentService.newAppointment(email, appointment);
-        return ResponseEntity.ok("Appointment created correctly " + appointment);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Appointment created correctly " + appointment);
     }
 
 
