@@ -70,7 +70,6 @@ public class AppointmentServiceTest {
         serviceType.setName("Hair cut");
         serviceType.setPrice(BigDecimal.valueOf(14.5));
 
-
         notService = new Service();
         notService.setLocal(localTest);
         notService.setId(2);

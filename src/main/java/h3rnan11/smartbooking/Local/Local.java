@@ -78,4 +78,14 @@ public class Local {
         services.remove(service);
         service.setLocal(null);
     }
+
+    public void addEmployee(User employee){
+        employees.add(employee);
+        employee.setLocal(null);
+    }
+
+    public void removeEmployee(User employee){
+        employees.remove(employee);
+
+    }
 }
