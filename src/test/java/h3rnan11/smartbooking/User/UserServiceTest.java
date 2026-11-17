@@ -195,7 +195,6 @@ public class UserServiceTest {
     @Test
     void setEmployeeToLocal_employeeIsAlreadyAssignedToALocal_conflict(){
         // Given
-        employee.setLocal();
         when(userRepository.findById(2)).thenReturn(Optional.of(employee));
 
         // Then
