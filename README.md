@@ -19,10 +19,13 @@ Clients, employees and owners each see the appointments that concern them, and c
 | Feature | Status |
 | --- | --- |
 | Log in with JWT | API + UI |
-| Register as a new client | API only |
+| Register as a new client | API + UI |
 | View your upcoming appointments | API + UI |
+| Book a new appointment (checks the employee's working hours and overlaps) | API only (UI pending) |
 | Reschedule an appointment (date, time, employee) | API only (UI pending) |
 | Cancel an appointment | API only (UI pending) |
+| Assign an employee to the owner's business | API only |
+| List the employees of a business | API only |
 
 ## Roles
 
@@ -30,9 +33,9 @@ Permissions are enforced by the API, regardless of what the UI shows.
 
 | Role | Permissions |
 | --- | --- |
-| `CLIENT` | View, reschedule and cancel their own appointments. New users register as clients. |
+| `CLIENT` | Book, view, reschedule and cancel their own appointments. New users register as clients. |
 | `EMPLOYEE` | View, reschedule and cancel the appointments assigned to them. |
-| `OWNER` | View every appointment of their business. |
+| `OWNER` | View every appointment of their business and assign employees to it. |
 | `ADMIN` | System administrator. No appointment features yet. |
 
 ## Tech Stack
@@ -107,10 +110,10 @@ SmartBooking/
 │   ├── Service/            # Services offered by a business (entity only for now)
 │   ├── EmployeeSchedule/   # Employees' working hours
 │   ├── Security/           # JWT generation and validation
-│   ├── Config/             # Spring Security, JWT filter, Clock, admin seeder
+│   ├── Config/             # Spring Security, JWT filter, Clock, admin seeder, global exception handler
 │   ├── DTO/  Role/  Utils/ # Records, role enum, Status and Category enums
 ├── src/main/resources/     # application.properties, data.sql
-├── src/test/java/...       # Unit tests (AppointmentServiceTest)
+├── src/test/java/...       # Unit tests (AppointmentServiceTest, UserServiceTest)
 ├── frontend/               # Angular app
 ├── docs/                   # Documentation per domain
 └── docker-compose.yml
@@ -123,9 +126,12 @@ SmartBooking/
 
 ## Roadmap
 
-- [ ] UI to reschedule and cancel appointments
+- [x] Book new appointments (API), validated against the employee's working hours and existing appointments
+- [x] Owners can assign employees to their business
+- [x] Unit tests for `AppointmentService` and `UserService`
+- [ ] UI to book, reschedule and cancel appointments
 - [ ] Pessimistic lock on the employee when booking or rescheduling
-- [ ] Book new appointments based on each employee's free slots
+- [ ] Show each employee's free slots for a service
 - [ ] Calendar view of your appointments
 - [ ] Admin metrics
 - [ ] Documentation for every domain in `docs/`
