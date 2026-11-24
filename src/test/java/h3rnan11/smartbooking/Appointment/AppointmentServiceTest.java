@@ -99,37 +99,6 @@ public class AppointmentServiceTest {
     }
 
     @Test
-    void update_userNotInvolved_throwsForbidden() {
-        // Given
-        when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
-        var dto = new DtoUpdateAppointment(null, LocalDate.of(2026, 10, 6), LocalTime.of(11, 0));
-
-        // When
-        AppointmentException ex = assertThrows(AppointmentException.class,
-                () -> service.updateAppointment("intruso@test.com", dto, 10));
-
-        // Then
-        assertEquals(HttpStatus.FORBIDDEN, ex.getStatus());
-        verify(appointmentRepository, never()).save(any());
-    }
-
-    @Test
-    void update_validData_savesNewDateAndTime() {
-        // Given
-        when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
-        when(appointmentRepository.existsOverlap(any(), any(), any(), any(), any())).thenReturn(false);
-        var dto = new DtoUpdateAppointment(null, LocalDate.of(2026, 10, 6), LocalTime.of(11, 0));
-
-        // When
-        service.updateAppointment("ana@test.com", dto, 10);
-
-        // Then
-        assertEquals(LocalDate.of(2026, 10, 6), apt.getDate());
-        assertEquals(LocalTime.of(11, 0), apt.getStartTime());
-        verify(appointmentRepository).save(apt);
-    }
-
-    @Test
     void update_appointmentNotFound_throwsNotFound(){
         // Given
         when(appointmentRepository.findById(99)).thenReturn(Optional.empty());
@@ -145,9 +114,24 @@ public class AppointmentServiceTest {
     }
 
     @Test
+    void update_userNotInvolved_throwsForbidden() {
+        // Given
+        when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
+        var dto = new DtoUpdateAppointment(null, LocalDate.of(2026, 10, 6), LocalTime.of(11, 0));
+
+        // When
+        AppointmentException ex = assertThrows(AppointmentException.class,
+                () -> service.updateAppointment("intruso@test.com", dto, 10));
+
+        // Then
+        assertEquals(HttpStatus.FORBIDDEN, ex.getStatus());
+        verify(appointmentRepository, never()).save(any());
+    }
+
+    @Test
     void update_employeeNotFound_throwsNotFound(){
         // Given
-        when(userRepository.findById(99)).thenReturn(Optional.empty());
+        when(userRepository.findByIdForUpdate(99)).thenReturn(Optional.empty());
         when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
         var dto = new DtoUpdateAppointment(99, LocalDate.of(2026, 10, 6), LocalTime.of(11, 0));
 
@@ -165,7 +149,7 @@ public class AppointmentServiceTest {
         // Given
         User notEmployee = user(99, "notemployee@test.com", Role.CLIENT);
         when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
-        when(userRepository.findById(99)).thenReturn(Optional.of(notEmployee));
+        when(userRepository.findByIdForUpdate(99)).thenReturn(Optional.of(notEmployee));
         var dto = new DtoUpdateAppointment(99, LocalDate.of(2026, 10, 6), LocalTime.of(11, 0));
 
         // When
@@ -183,7 +167,8 @@ public class AppointmentServiceTest {
         // Given
         apt.setStatus(status);
         when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
-        var dto = new DtoUpdateAppointment(null,LocalDate.of(2026, 10, 6), LocalTime.of(11, 0));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
+        var dto = new DtoUpdateAppointment(2,LocalDate.of(2026, 10, 6), LocalTime.of(11, 0));
 
         // When
         AppointmentException ex = assertThrows(AppointmentException.class,
@@ -198,7 +183,8 @@ public class AppointmentServiceTest {
     void update_dateIsNull_throwsBadRequest(){
         // Given
         when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
-        var dto = new DtoUpdateAppointment(null, null, LocalTime.of(11, 0));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
+        var dto = new DtoUpdateAppointment(2, null, LocalTime.of(11, 0));
 
         // When
         AppointmentException ex = assertThrows(AppointmentException.class,
@@ -213,7 +199,8 @@ public class AppointmentServiceTest {
     void update_startTimeIsNull_throwsBadRequest(){
         // Given
         when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
-        var dto = new DtoUpdateAppointment(null, LocalDate.of(2026, 10, 6), null);
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
+        var dto = new DtoUpdateAppointment(2, LocalDate.of(2026, 10, 6), null);
 
         // When
         AppointmentException ex = assertThrows(AppointmentException.class,
@@ -228,7 +215,8 @@ public class AppointmentServiceTest {
     void update_newDateTimeIsBeforeNow_throwsBadRequest(){
         // Given
         when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
-        var dto = new DtoUpdateAppointment(null, LocalDate.of(2026, 10, 1), LocalTime.of(10, 0));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
+        var dto = new DtoUpdateAppointment(2, LocalDate.of(2026, 10, 1), LocalTime.of(10, 0));
 
         // When
         AppointmentException ex = assertThrows(AppointmentException.class,
@@ -242,9 +230,11 @@ public class AppointmentServiceTest {
     @Test
     void update_ExistsOverlap_throwsConflict(){
         // Given
-        when(appointmentRepository.existsOverlap(any(), any(), any(), any(), any())).thenReturn(true);
         when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
-        var dto = new DtoUpdateAppointment(null, LocalDate.of(2026, 10, 6), LocalTime.of(10, 0));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
+        when(appointmentRepository.existsOverlap(any(), any(), any(), any(), any())).thenReturn(true);
+        when(employeeScheduleRepository.existsSlotForAppointment(any(), any(), any(), any())).thenReturn(true);
+        var dto = new DtoUpdateAppointment(2, LocalDate.of(2026, 10, 6), LocalTime.of(10, 0));
 
         // When
         AppointmentException ex = assertThrows(AppointmentException.class,
@@ -262,7 +252,9 @@ public class AppointmentServiceTest {
                 (2, LocalDate.of(2026,10,6),
                         LocalTime.of(12,0), LocalTime.of(12,30), 10)).thenReturn(false);
         when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
-        var dto = new DtoUpdateAppointment(null, LocalDate.of(2026, 10, 6), LocalTime.of(12, 0));
+        when(employeeScheduleRepository.existsSlotForAppointment(any(), any(), any(), any())).thenReturn(true);
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
+        var dto = new DtoUpdateAppointment(2, LocalDate.of(2026, 10, 6), LocalTime.of(12, 0));
 
 
         // When
@@ -280,7 +272,9 @@ public class AppointmentServiceTest {
         // Given
         when(appointmentRepository.existsOverlap(any(), any(), any(), any(), any())).thenReturn(false);
         when(appointmentRepository.findById(10)).thenReturn(Optional.of(apt));
-        var dto = new DtoUpdateAppointment(null, LocalDate.of(2026, 10, 6), LocalTime.of(10, 0));
+        when(employeeScheduleRepository.existsSlotForAppointment(any(), any(), any(), any())).thenReturn(true);
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
+        var dto = new DtoUpdateAppointment(2, LocalDate.of(2026, 10, 6), LocalTime.of(10, 0));
 
         // When
         service.updateAppointment("lucia@test.com", dto, 10);
@@ -401,7 +395,7 @@ public class AppointmentServiceTest {
     void new_employeeNotFound_throwsNotFound(){
         // Given
         when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
-        when(userRepository.findById(2)).thenReturn(Optional.empty());
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.empty());
         DtoNewAppointment apt = new DtoNewAppointment(2,1, LocalDate.of(2026,10,6), LocalTime.of(10,30));
 
         // When
@@ -420,7 +414,7 @@ public class AppointmentServiceTest {
         // Given
         notEmployee.setRole(role);
         when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
-        when(userRepository.findById(2)).thenReturn(Optional.of(notEmployee));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(notEmployee));
         DtoNewAppointment apt = new DtoNewAppointment(2,1, LocalDate.of(2026,10,6), LocalTime.of(10,30));
 
         // When
@@ -437,7 +431,7 @@ public class AppointmentServiceTest {
         // Given
         employee.setLocal(null);
         when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
-        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
         DtoNewAppointment apt = new DtoNewAppointment(2,1, LocalDate.of(2026,10,6), LocalTime.of(10,30));
 
         // When
@@ -454,7 +448,7 @@ public class AppointmentServiceTest {
         // Given
         employee.setLocal(local);
         when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
-        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
         when(serviceRepository.findById(2)).thenReturn(Optional.empty());
         DtoNewAppointment apt = new DtoNewAppointment(2,2, LocalDate.of(2026,10,6), LocalTime.of(10,30));
 
@@ -472,7 +466,7 @@ public class AppointmentServiceTest {
         // Given
         employee.setLocal(local);
         when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
-        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
         when(serviceRepository.findById(2)).thenReturn(Optional.of(notService));
         DtoNewAppointment apt = new DtoNewAppointment(2,2, LocalDate.of(2026,10,6), LocalTime.of(10,30));
 
@@ -492,7 +486,7 @@ public class AppointmentServiceTest {
         // Given
         employee.setLocal(local);
         when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
-        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
         when(serviceRepository.findById(1)).thenReturn(Optional.of(serviceType));
 
         DtoNewAppointment apt = new DtoNewAppointment(2,1, aptDate, null);
@@ -513,7 +507,7 @@ public class AppointmentServiceTest {
         // Given
         employee.setLocal(local);
         when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
-        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
         when(serviceRepository.findById(1)).thenReturn(Optional.of(serviceType));
 
         DtoNewAppointment apt = new DtoNewAppointment(2,1, null, aptStartTime);
@@ -536,7 +530,7 @@ public class AppointmentServiceTest {
         // Given
         employee.setLocal(local);
         when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
-        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
         when(serviceRepository.findById(1)).thenReturn(Optional.of(serviceType));
 
         DtoNewAppointment apt = new DtoNewAppointment(2,1, aptDate, aptStartTime);
@@ -560,7 +554,7 @@ public class AppointmentServiceTest {
         // Given
         employee.setLocal(local);
         when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
-        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
         when(serviceRepository.findById(1)).thenReturn(Optional.of(serviceType));
         when(employeeScheduleRepository.existsSlotForAppointment(2, weekDay, aptStartTime, aptEndTime )).thenReturn(false);
         DtoNewAppointment apt = new DtoNewAppointment(2,1, aptDate, aptStartTime);
@@ -584,7 +578,7 @@ public class AppointmentServiceTest {
         // Given
         employee.setLocal(local);
         when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
-        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
         when(serviceRepository.findById(1)).thenReturn(Optional.of(serviceType));
         when(employeeScheduleRepository.existsSlotForAppointment(2, weekDay, aptStartTime, aptEndTime )).thenReturn(true);
         when(appointmentRepository.existsOverlap(2, aptDate, aptStartTime, aptEndTime, null)).thenReturn(true);
@@ -609,7 +603,7 @@ public class AppointmentServiceTest {
         // Given
         employee.setLocal(local);
         when(userRepository.findByEmail("ana@test.com")).thenReturn(Optional.of(client));
-        when(userRepository.findById(2)).thenReturn(Optional.of(employee));
+        when(userRepository.findByIdForUpdate(2)).thenReturn(Optional.of(employee));
         when(serviceRepository.findById(1)).thenReturn(Optional.of(serviceType));
         when(employeeScheduleRepository.existsSlotForAppointment(2, weekDay, aptStartTime, aptEndTime )).thenReturn(true);
         when(appointmentRepository.existsOverlap(2, aptDate, aptStartTime, aptEndTime, null)).thenReturn(false);

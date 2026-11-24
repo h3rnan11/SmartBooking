@@ -88,7 +88,7 @@ public class AppointmentService {
 
         Optional<User> existsEmployee = userRepository.findByIdForUpdate(employeeId);
         if(existsEmployee.isEmpty())
-            throw UserException.notFound("employee with id {"+employeeId+"} does not exists");
+            throw AppointmentException.notFound("employee with id {"+employeeId+"} does not exists");
 
         User employee = existsEmployee.get();
         Local newLocal = employee.getLocal();
@@ -138,7 +138,7 @@ public class AppointmentService {
         if (appointment.employeeId() == null)
             throw AppointmentException.badRequest("Null employee id");
 
-        User employee = userRepository.findById(appointment.employeeId())
+        User employee = userRepository.findByIdForUpdate(appointment.employeeId())
                 .orElseThrow(() -> AppointmentException.notFound("No employee found with id " + appointment.employeeId()));
 
         if(!employee.getRole().equals(Role.EMPLOYEE)
@@ -146,6 +146,9 @@ public class AppointmentService {
             throw AppointmentException.badRequest("The given employee is not an Employee or doesn't work in this local");
         }
 
+        if(appointment.serviceId() == null){
+            throw AppointmentException.badRequest("service Id can't be null");
+        }
         h3rnan11.smartbooking.Service.Service serviceType = serviceRepository.findById(appointment.serviceId())
                 .orElseThrow(() -> AppointmentException.notFound("No Service found with id "+ appointment.serviceId()));
 
