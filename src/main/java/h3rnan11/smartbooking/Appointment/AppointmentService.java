@@ -8,6 +8,7 @@ import h3rnan11.smartbooking.Local.Local;
 import h3rnan11.smartbooking.Role.Role;
 import h3rnan11.smartbooking.Service.ServiceRepository;
 import h3rnan11.smartbooking.User.User;
+import h3rnan11.smartbooking.User.UserException;
 import h3rnan11.smartbooking.User.UserRepository;
 
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class AppointmentService {
@@ -80,13 +82,15 @@ public class AppointmentService {
         }
 
         //If employeeId is null we left the previous employee
-        User employee = (appointment.employeeId() == null)
-                ? apt.getEmployee()
-                : userRepository.findById(appointment.employeeId())
-                .orElseThrow(() -> AppointmentException.notFound(
-                        "No employee found with id " + appointment.employeeId()));
+        Integer employeeId = (appointment.employeeId() == null)
+                ? apt.getEmployee().getId()
+                : appointment.employeeId();
 
+        Optional<User> existsEmployee = userRepository.findByIdForUpdate(employeeId);
+        if(existsEmployee.isEmpty())
+            throw UserException.notFound("employee with id {"+employeeId+"} does not exists");
 
+        User employee = existsEmployee.get();
         Local newLocal = employee.getLocal();
         Local aptLocal = apt.getEmployee().getLocal();
         if (employee.getRole() != Role.EMPLOYEE
@@ -107,6 +111,11 @@ public class AppointmentService {
         apt.setStartTime(appointment.startTime());
         apt.deriveEndTime();
 
+        if(!employeeScheduleRepository.existsSlotForAppointment(employee.getId(), appointment.date().getDayOfWeek().getValue(),
+                appointment.startTime(), apt.getEndTime())){
+            throw AppointmentException.conflict("Not available spot");
+        }
+
         if(appointmentRepository.existsOverlap(
                 apt.getEmployee().getId(),
                 apt.getDate(),
@@ -126,6 +135,8 @@ public class AppointmentService {
         if(!client.getRole().equals(Role.CLIENT)){
             throw AppointmentException.forbidden("Only Clients can create new appointments");
         }
+        if (appointment.employeeId() == null)
+            throw AppointmentException.badRequest("Null employee id");
 
         User employee = userRepository.findById(appointment.employeeId())
                 .orElseThrow(() -> AppointmentException.notFound("No employee found with id " + appointment.employeeId()));
